@@ -1,24 +1,22 @@
 {% extends "base.html" %}
 {% set page = "home" %}
 {% block title %}Мухамед Ads — креативно-технологическая сеть | Сократитель{% endblock %}
-{% block jsonld %}<script type="application/ld+json">{{ jsonld|safe }}</script>
-  <script type="application/ld+json">{{ faq_jsonld|safe }}</script>{% endblock %}
 {% block main %}
     <section class="hero">
      <div class="fit" id="fit">
       <div class="hero-c">
         <p class="kick rise" style="--d:.05s"><i class="pulse"></i> <span data-i18n="kick">Умный сокращатель сети</span></p>
         <h1 class="rise" style="--d:.12s"><span class="hrow2"><span class="hbox glitch" data-i18n="h1a" data-text="Умные">Умные</span><span class="hmid glitch" data-i18n="h1b" data-text="ссылки">ссылки</span></span><i class="hbar" aria-hidden="true"></i><span class="hline" data-i18n="h1c">превращайте длинные адреса в короткие</span></h1>
-        <p class="typed rise" style="--d:.3s"><span class="t" data-type='["Вставьте длинный адрес","Нажмите — адрес сожмётся","Ссылка в буфере — делитесь"]'></span><i class="caret"></i></p>
-        <p class="lead rise" data-i18n="lead" style="--d:.4s">Любой длинный адрес — в одну короткую ссылку за мгновение.
-Она копируется сама — вам остаётся только отправить её дальше.</p>
+        <p class="typed rise" style="--d:.3s"><span class="t" data-type='["Вставьте длинный адрес в поле ввода","Нажмите кнопку, и адрес мгновенно сожмётся","Ссылка уже в буфере, делитесь с кем угодно","Даже самый длинный адрес станет компактным","Короткая ссылка откроет нужную страницу без лишних шагов","Делитесь в мессенджерах, соцсетях и письмах"]'></span><i class="caret"></i></p>
+        <p class="lead rise" data-i18n="lead" style="--d:.4s">Один аккуратный адрес вместо длинной ссылки.
+Он готов сразу и копируется сам, остаётся только поделиться.</p>
       </div>
 
       <div class="shorten rise" style="--d:.5s" id="shorten">
         <div class="sh-top">
           <span class="sh-tag"><i class="pulse"></i><span data-i18n="sht">Умный сокращатель</span></span>
           <span class="sh-flow" aria-hidden="true">
-            <em class="from">https://example.com/very/long/link?utm=…</em>
+            <em class="from">https://www.muhamedlabs.pro/ads/network/tools/shortener?ref=link…</em>
             <i class="line"><b></b></i>
             <em class="to">{{ request.host }}/aB3xK</em>
           </span>
@@ -30,7 +28,7 @@
           <div class="sh-row">
             <span class="sh-field">
               <i class="fa-solid fa-globe sh-fi" aria-hidden="true"></i>
-              <input class="sh-in" id="shUrl" name="url" type="url" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="2048" placeholder="https://example.com/a/very/long/link" required>
+              <input class="sh-in" id="shUrl" name="url" type="url" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="2048" placeholder="https://www.muhamedlabs.pro/ads/network/shortener" required>
             </span>
             <button class="btn sh-go" type="submit" id="shGo">
               <span data-i18n="go">Сократить</span>
@@ -69,25 +67,7 @@
         </div>
       </div>
      </div>
-     <a class="more" href="#about" aria-label="Как это работает"><span data-i18n="more">Как это работает</span><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></a>
     </section>
 
-    <section class="seo" id="about">
-      <div class="seo-in">
-        <h2 data-i18n="sx_h">Как работает сокращатель ссылок</h2>
-        <p class="seo-p" data-i18n="sx_p">Бесплатный сервис коротких ссылок без регистрации: вставьте длинный адрес и получите компактную ссылку, которой удобно делиться в мессенджерах, соцсетях и на любых площадках.</p>
-        <ol class="seo-steps">
-          <li><b>01</b><h3 data-i18n="st1t">Вставьте адрес</h3><p data-i18n="st1p">Скопируйте любую длинную ссылку с http или https и вставьте её в поле выше.</p></li>
-          <li><b>02</b><h3 data-i18n="st2t">Нажмите «Сократить»</h3><p data-i18n="st2p">Короткая ссылка создаётся за мгновение и сразу копируется в буфер обмена.</p></li>
-          <li><b>03</b><h3 data-i18n="st3t">Делитесь</h3><p data-i18n="st3p">Отправляйте ссылку друзьям и клиентам — переход работает на любых устройствах.</p></li>
-        </ol>
-        <h2 data-i18n="fq_h">Частые вопросы</h2>
-        <div class="faq">
-          {% for q, a in faq %}
-          <details><summary data-i18n="q{{ loop.index }}">{{ q }}</summary><p data-i18n="a{{ loop.index }}">{{ a }}</p></details>
-          {% endfor %}
-        </div>
-      </div>
-    </section>
   <div class="toast" id="toast" role="status" aria-live="polite"><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span id="toastTx"></span></div>
 {% endblock %}

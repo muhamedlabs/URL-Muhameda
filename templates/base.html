@@ -36,12 +36,13 @@
   <meta name="twitter:image:alt" content="Умный сокращатель ссылок">
   <meta name="twitter:image" content="{{ site_url }}/static/images/twitter/SEO_4.webp">
   {% block jsonld %}<script type="application/ld+json">{{ jsonld|safe }}</script>{% endblock %}
-  <link rel="stylesheet" href="/static/css/styles_base.css?v=20261120">
-  <link rel="stylesheet" href="/static/css/styles_home.css?v=20261120">
-  <link rel="stylesheet" href="/static/css/responsive_base.css?v=20261120">
-  <link rel="stylesheet" href="/static/css/responsive_home.css?v=20261120">
-  <link rel="stylesheet" href="/static/css/styles_short.css?v=20261120">
+  <link rel="stylesheet" href="/static/css/styles_base.css">
+  <link rel="stylesheet" href="/static/css/styles_home.css">
+  <link rel="stylesheet" href="/static/css/responsive_base.css">
+  <link rel="stylesheet" href="/static/css/responsive_home.css">
+  <link rel="stylesheet" href="/static/css/styles_short.css">
   {% block head %}{% endblock %}
+  <script src="/static/js/guard.js"></script>
   <script>document.documentElement.classList.add('js'); try { if (matchMedia('(min-width:1181px), (hover:hover) and (pointer:fine) and (min-width:700px), (orientation:landscape) and (min-aspect-ratio:3/2) and (min-width:700px)').matches) document.documentElement.classList.add('onescreen') } catch (e) {}{% if page == 'home' %} try { if (sessionStorage.getItem('boot') && !/[?&]boot\b/.test(location.search)) document.documentElement.classList.add('noboot'); else sessionStorage.setItem('boot', '1') } catch (e) { document.documentElement.classList.add('noboot') } setTimeout(function () { document.documentElement.classList.add('go') }, 12000){% else %} document.documentElement.classList.add('noboot', 'go'){% endif %}</script>
 </head>
 <body{% block bodyattrs %}{% endblock %}>
@@ -49,13 +50,13 @@
     <i class="boot-panel boot-panel-l"></i>
     <i class="boot-panel boot-panel-r"></i>
   </div>
-  <div class="bgimg" id="bgimg" aria-hidden="true"></div>
+  <div class="bgimg{% if page != 'home' %} st{% endif %}" id="bgimg" aria-hidden="true"{% if page == 'home' %} data-bg='{{ bg_json }}'{% elif bg_first %} style="--bg-img:url('{{ bg_first }}')"{% endif %}></div>
   <div class="spot" aria-hidden="true"></div>
   <canvas id="bg"></canvas>
   <div class="veil"></div>
   <div class="grain"></div>
   {% include "_header.html" %}
-  <div class="edge" aria-hidden="true"><span data-i18n="edge">Мухамед Ads — Сокращатель ссылок</span></div>
+  <div class="edge" aria-hidden="true"><span data-i18n="edge">Мухамед Ads · Сокращатель ссылок</span></div>
   <main>
 {% block main %}{% endblock %}
     <div class="mq" aria-hidden="true">
@@ -65,10 +66,10 @@
     </div>
   </main>
   <script src="https://kit.fontawesome.com/87b9cd76ed.js" crossorigin="anonymous" defer></script>
-  <script src="/static/js/lang_short.js?v=20261120"></script>
-  <script src="/static/js/script_lang.js?v=20261120"></script>
-  <script src="/static/js/script_base.js?v=20261120"></script>
-  <script src="/static/js/script_home.js?v=20261120"></script>
-  <script src="/static/js/script_short.js?v=20261120"></script>
+  <script src="/static/js/lang_short.js"></script>
+  <script src="/static/js/script_lang.js"></script>
+  <script src="/static/js/script_base.js"></script>
+  <script src="/static/js/script_home.js"></script>
+  <script src="/static/js/script_short.js"></script>
 </body>
 </html>
