@@ -40,7 +40,7 @@ def robots():
 
 @pages_bp.get("/manifest.webmanifest")
 def manifest():
-    data = {"name": "Мухамед Ads — сокращатель ссылок", "short_name": "Сокращатель", "start_url": "/",
+    data = {"name": "Мухамед Ads · сокращатель ссылок", "short_name": "Сокращатель", "start_url": "/",
             "display": "standalone", "background_color": "#222222", "theme_color": "#222222", "lang": "ru",
             "icons": [{"src": "/static/logo.webp", "sizes": "900x900", "type": "image/webp"}]}
     return Response(json.dumps(data, ensure_ascii=False), mimetype="application/manifest+json")

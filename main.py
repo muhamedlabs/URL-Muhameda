@@ -17,14 +17,14 @@ app.register_blueprint(api_bp)
 app.register_blueprint(pages_bp)
 
 
-FAQ_RU = [
-    ("Как сократить ссылку?", "Вставьте длинный адрес в поле на главной странице и нажмите «Сократить». Короткая ссылка создастся мгновенно и сама скопируется в буфер обмена."),
-    ("Сокращатель бесплатный?", "Да. Создание коротких ссылок бесплатное, регистрация не нужна."),
-    ("Сколько живёт короткая ссылка?", "Ссылка работает бессрочно, пока её не удалят из хранилища. Мы делаем резервные копии базы ссылок."),
-    ("Можно ли изменить адрес, на который ведёт короткая ссылка?", "Да, автор может изменить конечный адрес, не меняя саму короткую ссылку. Автор определяется по браузеру, в котором ссылка была создана."),
-    ("Какие ссылки можно сокращать?", "Любые адреса с протоколами http и https. Ссылки других сервисов-сокращателей и самого нашего сайта сокращать нельзя."),
-    ("Безопасно ли переходить по коротким ссылкам?", "Перед переходом показывается страница с итоговым доменом, а сам редирект работает только на безопасные http и https адреса."),
-]
+def _backgrounds() -> list:
+    d = os.path.join(settings.BASE_DIR, "static", "images", "background")
+    try:
+        names = [n for n in os.listdir(d) if n.lower().endswith((".webp", ".jpg", ".jpeg", ".png"))]
+    except OSError:
+        return []
+    key = lambda n: (0, int(os.path.splitext(n)[0]), n) if os.path.splitext(n)[0].isdigit() else (1, 0, n)
+    return ["/static/images/background/" + n for n in sorted(names, key=key)]
 
 
 def _site_url() -> str:
@@ -41,7 +41,7 @@ def seo():
              "alternateName": ["Muhamed Ads", "Мухамед Ads"], "url": "https://muhamedlabs.pro",
              "logo": f"{base}/static/logo.webp",
              "description": "Креативная и технологическая сеть"},
-            {"@type": "WebSite", "@id": f"{base}/#site", "url": f"{base}/", "name": "Мухамед Ads — сокращатель ссылок",
+            {"@type": "WebSite", "@id": f"{base}/#site", "url": f"{base}/", "name": "Мухамед Ads · сокращатель ссылок",
              "alternateName": "Сокращатель ссылок Мухамед Ads", "inLanguage": ["ru", "uk", "en"],
              "publisher": {"@id": f"{base}/#org"}},
             {"@type": "WebApplication", "@id": f"{base}/#app", "name": "Умный сокращатель ссылок",
@@ -57,10 +57,8 @@ def seo():
     }
 
     dumped = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
-    faq = {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [
-        {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in FAQ_RU]}
-    faq_dumped = json.dumps(faq, ensure_ascii=False).replace("</", "<\\/")
-    return {"site_url": base, "jsonld": dumped, "faq_jsonld": faq_dumped, "faq": FAQ_RU}
+    bgs = _backgrounds()
+    return {"site_url": base, "jsonld": dumped, "bg_json": json.dumps(bgs), "bg_first": bgs[0] if bgs else ""}
 
 
 @app.after_request

@@ -1,13 +1,3 @@
-"""Хранилище ссылок на обычном redis-клиенте (без ashredis).
-
-Каждая ссылка — hash `shorten_links_database:Links:<код>`.
-  * Index   — множество кодов; SADD возвращает 1 только одному из параллельных запросов,
-              поэтому два человека не получат один и тот же короткий код;
-  * Clicks  — счётчики переходов (HINCRBY);
-  * Owners  — какие ссылки создал владелец;
-  * Stats   — общая статистика.
-Резервная копия всех ссылок пишется в DATA_FILE; при запуске недостающие ссылки восстанавливаются из неё.
-"""
 import hashlib
 import json
 import os
@@ -59,7 +49,7 @@ def client() -> redis.Redis:
             _client = redis.Redis(
                 host=settings.REDIS_HOST, port=settings.REDIS_PORT, password=settings.REDIS_PASSWORD,
                 db=settings.REDIS_DB, decode_responses=True,
-                socket_connect_timeout=3, socket_timeout=3, health_check_interval=30, retry_on_timeout=True,
+                socket_connect_timeout=3, socket_timeout=3, health_check_interval=30,
             )
         return _client
 
@@ -160,11 +150,6 @@ def get_url(code: str) -> Optional[str]:
         _mark(False, str(e))
         print("[REDIS] get error:", e)
     return _mem.get(code) or (_read_file().get(code) or {}).get("original_url")
-
-
-def get_link(code: str) -> Optional[dict]:
-    rec = _load(code)
-    return dict(rec, id=code, clicks=client().hget(CLICKS, code) or "0") if rec else None
 
 
 def scan_all() -> Dict[str, dict]:
