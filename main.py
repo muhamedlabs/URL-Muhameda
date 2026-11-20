@@ -67,6 +67,7 @@ def init():
         store.client().ping()
         print(f"[REDIS] OK {settings.REDIS_HOST}:{settings.REDIS_PORT} db={settings.REDIS_DB}")
         store.migrate_legacy()
+        store.migrate_to_ashredis()
         store.seed_from_file()
         store.backup_once()
     except Exception as e:

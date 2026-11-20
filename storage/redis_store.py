@@ -1,28 +1,111 @@
+"""Хранилище ссылок.
+
+Записи ссылок (адрес, даты, автор) хранятся через ashredis.
+Всё, что ashredis не умеет атомарно, остаётся на обычном redis-клиенте:
+  * Index   — множество кодов; SADD возвращает 1 только одному из параллельных запросов,
+              поэтому два человека не получат один и тот же короткий код;
+  * Clicks  — счётчики переходов (HINCRBY);
+  * Owners  — какие ссылки создал владелец;
+  * Stats   — общая статистика.
+Публичные функции этого модуля остались прежними, routes/* менять не нужно.
+"""
+import asyncio
 import hashlib
 import json
 import os
 import threading
 import time
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Dict, Optional
 
 import redis
+from ashredis import MISSING, RecordBase, RedisObject, RedisParams
 
 import settings
 
 ROOT = "shorten_links_database:"
 PREV_ROOT = "MuhamedLabs:URL:"
-LINKS = ROOT + "Links:"
+LINKS = ROOT + "Links:"          # старые хеши (до ashredis), нужны только для миграции
 OWNERS = ROOT + "Owners:"
 STATS = ROOT + "Stats"
+INDEX = ROOT + "Index"
+CLICKS = ROOT + "Clicks"
+MIGRATED = ROOT + "AshMigrated"
 LEGACY = "Url:"
 LEGACY_IDX = "UrlIdx:"
+
+FIELDS = ("short_id", "original_url", "created_at", "updated_at", "created_by", "created_ip")
+
+
+@dataclass
+class LinkRecord(RecordBase):
+    short_id: Optional[str] = MISSING
+    original_url: Optional[str] = MISSING
+    created_at: Optional[str] = MISSING
+    updated_at: Optional[str] = MISSING
+    created_by: Optional[str] = MISSING
+    created_ip: Optional[str] = MISSING
+
 
 _lock = threading.Lock()
 _client: Optional[redis.Redis] = None
 _mem: Dict[str, str] = {}
 _file_cache = {"mtime": 0.0, "data": {}}
 _state = {"redis_ok": None, "last_error": "", "last_backup": 0.0}
+
+# ---- ashredis работает в asyncio, Flask — синхронный: держим один фоновый event loop ----
+_loop: Optional[asyncio.AbstractEventLoop] = None
+_loop_lock = threading.Lock()
+
+
+def _get_loop() -> asyncio.AbstractEventLoop:
+    global _loop
+    with _loop_lock:
+        if _loop is None:
+            loop = asyncio.new_event_loop()
+            threading.Thread(target=loop.run_forever, daemon=True, name="ashredis-loop").start()
+            _loop = loop
+        return _loop
+
+
+def _run(coro, timeout: float = 6.0):
+    return asyncio.run_coroutine_threadsafe(coro, _get_loop()).result(timeout)
+
+
+def _params() -> RedisParams:
+    return RedisParams(host=settings.REDIS_HOST, port=settings.REDIS_PORT,
+                       password=settings.REDIS_PASSWORD or "", db=settings.REDIS_DB)
+
+
+def _val(v):
+    return None if v is MISSING or v is None else v
+
+
+async def _a_save(code: str, rec: dict) -> None:
+    async with RedisObject(redis_params=_params()) as ro:
+        await ro.save(record=LinkRecord(**{k: rec.get(k) for k in FIELDS}), key=code)
+
+
+async def _a_load(code: str) -> Optional[dict]:
+    async with RedisObject(redis_params=_params()) as ro:
+        try:
+            r = await ro.load(record_type=LinkRecord, key=code)
+        except (KeyError, LookupError):
+            return None
+    if r is None:
+        return None
+    out = {k: _val(getattr(r, k, None)) for k in FIELDS}
+    return out if out["original_url"] else None
+
+
+async def _a_delete(code: str) -> None:
+    async with RedisObject(redis_params=_params()) as ro:
+        await ro.delete(record_type=LinkRecord, key=code)
+
+
+def _load(code: str) -> Optional[dict]:
+    return _run(_a_load(code))
 
 
 def client() -> redis.Redis:
@@ -57,8 +140,8 @@ def _today() -> str:
 def visit(code: str) -> None:
     try:
         r = client()
-        if r.exists(LINKS + code):
-            n = r.hincrby(LINKS + code, "clicks", 1)
+        if r.sismember(INDEX, code):
+            n = r.hincrby(CLICKS, code, 1)
             r.hincrby(STATS, "visits", 1)
             if n > int(r.hget(STATS, "top") or 0):
                 r.hset(STATS, "top", n)
@@ -68,8 +151,7 @@ def visit(code: str) -> None:
 
 def stats() -> dict:
     try:
-        r = client()
-        h = r.hgetall(STATS)
+        h = client().hgetall(STATS)
         return {"visits": int(h.get("visits", 0)), "top": int(h.get("top", 0))}
     except (redis.RedisError, ValueError):
         return {"visits": 0, "top": 0}
@@ -119,41 +201,40 @@ def _write_file(data: Dict[str, dict]) -> None:
 
 def get_url(code: str) -> Optional[str]:
     try:
-        v = client().hget(LINKS + code, "original_url") or client().hget(LEGACY + code, "original_url")
+        if not client().sismember(INDEX, code):
+            _mark(True)
+            _mem.pop(code, None)
+            return None
+        rec = _load(code)
         _mark(True)
-        if v:
-            _mem[code] = v
-            return v
+        if rec:
+            _mem[code] = rec["original_url"]
+            return rec["original_url"]
         _mem.pop(code, None)
         return None
-    except redis.RedisError as e:
+    except Exception as e:
         _mark(False, str(e))
         print("[REDIS] get error:", e)
     return _mem.get(code) or (_read_file().get(code) or {}).get("original_url")
 
 
 def get_link(code: str) -> Optional[dict]:
-    return client().hgetall(LINKS + code) or None
+    rec = _load(code)
+    return dict(rec, id=code, clicks=client().hget(CLICKS, code) or "0") if rec else None
 
 
 def scan_all() -> Dict[str, dict]:
     out: Dict[str, dict] = {}
-    r = client()
-    keys = list(r.scan_iter(match=LINKS + "*", count=500))
-    if not keys:
-        return out
-    pipe = r.pipeline(transaction=False)
-    for k in keys:
-        pipe.hgetall(k)
-    for k, v in zip(keys, pipe.execute()):
-        if v.get("original_url"):
-            out[k[len(LINKS):]] = v
+    for code in sorted(client().smembers(INDEX)):
+        rec = _load(code)
+        if rec:
+            out[code] = rec
     return out
 
 
 def count() -> Optional[int]:
     try:
-        n = sum(1 for _ in client().scan_iter(match=LINKS + "*", count=500))
+        n = client().scard(INDEX)
         _mark(True)
         return n
     except redis.RedisError as e:
@@ -161,16 +242,19 @@ def count() -> Optional[int]:
         return None
 
 
-def create(code: str, url: str, owner: str = "", ip: str = "") -> bool:
+def create(code: str, url: str, owner: str = "", ip: str = "", created_at: str = "", updated_at: str = "") -> bool:
     r = client()
-    if not r.hsetnx(LINKS + code, "id", code):
+    if not r.sadd(INDEX, code):          # код уже занят
         return False
     now = _now()
-    r.hset(LINKS + code, mapping={
-        "short_id": _short(code), "original_url": url,
-        "created_at": now, "updated_at": now,
-        "created_by": owner, "created_ip": ip,
-    })
+    rec = {"short_id": _short(code), "original_url": url,
+           "created_at": created_at or now, "updated_at": updated_at or created_at or now,
+           "created_by": owner, "created_ip": ip}
+    try:
+        _run(_a_save(code, rec))
+    except Exception:
+        r.srem(INDEX, code)              # не оставляем «пустой» код в индексе
+        raise
     if owner and owner != "legacy":
         r.sadd(OWNERS + owner, code)
     r.hincrby(STATS, "created:" + _today(), 1)
@@ -179,24 +263,37 @@ def create(code: str, url: str, owner: str = "", ip: str = "") -> bool:
 
 
 def update(code: str, url: str, owner: str) -> str:
-    r = client()
-    rec = r.hgetall(LINKS + code)
+    rec = _load(code)
     if not rec:
         return "missing"
     if not owner or rec.get("created_by") != owner:
         return "forbidden"
-    r.hset(LINKS + code, mapping={"original_url": url, "updated_at": _now()})
+    rec.update(original_url=url, updated_at=_now())
+    _run(_a_save(code, rec))
     _mem[code] = url
     return "ok"
 
 
 def by_owner(owner: str) -> list:
+    out = []
+    for c in sorted(client().smembers(OWNERS + owner)):
+        rec = _load(c)
+        if rec:
+            out.append(dict(rec, id=c))
+    return out
+
+
+def _raw_old_hashes() -> Dict[str, dict]:
+    """Ссылки старого формата (обычные хеши Redis) — только для разовой миграции."""
     r = client()
-    codes = sorted(r.smembers(OWNERS + owner))
-    pipe = r.pipeline(transaction=False)
-    for c in codes:
-        pipe.hgetall(LINKS + c)
-    return [dict(v, id=c) for c, v in zip(codes, pipe.execute()) if v]
+    out: Dict[str, dict] = {}
+    for k in r.scan_iter(match=LINKS + "*", count=500):
+        if r.type(k) != "hash":
+            continue
+        v = r.hgetall(k)
+        if v.get("original_url"):
+            out[k[len(LINKS):]] = v
+    return out
 
 
 def migrate_legacy() -> int:
@@ -216,7 +313,9 @@ def migrate_legacy() -> int:
         r.hsetnx(LINKS + code, "created_by", "legacy")
         moved += 1
     if moved:
-        backup_once()
+        old = _raw_old_hashes()
+        if old:
+            _write_file(old)
         for k in keys:
             code = k[len(LEGACY):]
             if r.hget(LINKS + code, "original_url"):
@@ -226,16 +325,39 @@ def migrate_legacy() -> int:
     return moved
 
 
+def migrate_to_ashredis() -> int:
+    """Разово переносит старые хеши в ashredis. Старые ключи не удаляются.
+    Перед переносом делает резервную копию в DATA_FILE."""
+    r = client()
+    if r.get(MIGRATED):
+        return 0
+    old = _raw_old_hashes()
+    if not old:
+        r.set(MIGRATED, _now())
+        return 0
+    _write_file(old)
+    n = 0
+    for code, v in old.items():
+        rec = {k: v.get(k) for k in FIELDS}
+        rec["short_id"] = rec["short_id"] or _short(code)
+        _run(_a_save(code, rec))
+        r.sadd(INDEX, code)
+        if v.get("clicks"):
+            r.hset(CLICKS, code, v["clicks"])
+        n += 1
+    r.set(MIGRATED, _now())
+    print(f"[MIGRATE] перенесено в ashredis: {n}")
+    return n
+
+
 def seed_from_file() -> int:
     try:
         if count():
             return 0
         n = 0
         for code, rec in _read_file().items():
-            if create(code, rec["original_url"], rec.get("created_by", "legacy"), rec.get("created_ip", "")):
-                for f in ("created_at", "updated_at"):
-                    if rec.get(f):
-                        client().hset(LINKS + code, f, rec[f])
+            if create(code, rec["original_url"], rec.get("created_by", "legacy"), rec.get("created_ip", ""),
+                      rec.get("created_at", ""), rec.get("updated_at", "")):
                 n += 1
         if n:
             print(f"[SEED] {n}")
@@ -250,7 +372,7 @@ def backup_once() -> bool:
     try:
         data = scan_all()
         _mark(True)
-    except redis.RedisError as e:
+    except Exception as e:
         _mark(False, str(e))
         return False
     if not data:
