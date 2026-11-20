@@ -3,21 +3,21 @@
   const C = {
     ru: {
       brand: 'Мухамед', n1: 'Правила сети', n4: 'Мультиссылка', n2: 'Мониторинг сети', n3: 'YouTube-проєкти',
-      bhl: 'Сокращатель ссылок', edge: 'Мухамед Ads · Сокращатель ссылок',
+      bhl: 'Сокращатель ссылок', edge: 'Мухамед Ads — Сокращатель ссылок',
       m1: 'Длинные адреса в короткие ссылки', m2: 'Один клик, одна ссылка', m3: 'Мгновенно, точно, надёжно',
       m4: 'Только безопасные http и https', m5: 'Мухамед Ads', m6: 'Креативная и технологическая сеть',
       m7: 'Умные ссылки', m8: 'Сожми адрес и делись без границ'
     },
     uk: {
       brand: 'Мухамед', n1: 'Правила мережі', n4: 'Мультипосилання', n2: 'Моніторинг мережі', n3: 'YouTube-проєкти',
-      bhl: 'Скорочувач посилань', edge: 'Мухамед Ads · Скорочувач посилань',
+      bhl: 'Скорочувач посилань', edge: 'Мухамед Ads — Скорочувач посилань',
       m1: 'Довгі адреси в короткі посилання', m2: 'Один клік, одне посилання', m3: 'Миттєво, точно, надійно',
       m4: 'Лише безпечні http та https', m5: 'Мухамед Ads', m6: 'Креативна та технологічна мережа',
       m7: 'Розумні посилання', m8: 'Стисни адресу й ділись без меж'
     },
     en: {
       brand: 'Muhamed', n1: 'Network rules', n4: 'Multilink', n2: 'Network monitoring', n3: 'YouTube projects',
-      bhl: 'Link shortener', edge: 'Muhamed Ads · Link shortener',
+      bhl: 'Link shortener', edge: 'Muhamed Ads — Link shortener',
       m1: 'Long addresses into short links', m2: 'One click, one link', m3: 'Instant, precise, reliable',
       m4: 'Only safe http and https', m5: 'Muhamed Ads', m6: 'Creative & Technology Network',
       m7: 'Smart links', m8: 'Compress the address and share without limits'

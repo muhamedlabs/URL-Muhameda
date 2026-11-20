@@ -2,6 +2,12 @@
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // единая анимация цифр: одна кривая, ведущие нули приглушены
+  const ease = t => (1 - Math.cos(Math.PI * t)) / 2;
+  const dig = (v, len) => {
+    const s = String(v), z = Math.max(0, len - s.length);
+    return (z ? '<i class="lz">' + '0'.repeat(z) + '</i>' : '') + s;
+  };
 
   {
     $$('[data-type]').forEach(el => {
@@ -76,15 +82,14 @@
         '</div>');
       const hr = $('.boot-hud-r', boot);
       if (hr) {
-        const fin = hr.textContent;
-        let f = 0;
-        const iv = setInterval(() => {
-          f++;
-          const done = Math.floor(f / 3);
-          hr.textContent = [...fin].map((c, i) => /\d/.test(c) && i >= done ? String(Math.floor(Math.random() * 10)) : c).join('');
-          if (done >= fin.length) { clearInterval(iv); hr.textContent = fin; }
-        }, 70);
-        setTimeout(() => { if (hr) hr.textContent = fin; clearInterval(iv); }, 2600);
+        const parts = stamp.split('.').map(Number), hf = v => parts.map(n => String(Math.round(n * v)).padStart(2, '0')).join('.');
+        hr.textContent = hf(0);
+        const h0 = performance.now();
+        (function hs(now) {
+          const t = Math.min((now - h0) / 2000, 1);
+          hr.textContent = hf(ease(t));
+          if (t < 1) requestAnimationFrame(hs);
+        })(h0);
       }
       const num = $('.bn', boot);
 
@@ -136,17 +141,6 @@
         if (left) requestAnimationFrame(scr);
       })(tb);
 
-      const keys = [[0, 0], [.26, .38], [.40, .45], [.74, .9], [.88, .94], [1, 1]];
-      const ease = t => {
-        for (let i = 1; i < keys.length; i++) {
-          if (t <= keys[i][0]) {
-            const [t1, p1] = keys[i - 1], [t2, p2] = keys[i];
-            const k = (t - t1) / (t2 - t1);
-            return p1 + (p2 - p1) * (1 - Math.cos(Math.PI * k)) / 2;
-          }
-        }
-        return 1;
-      };
       const t0 = performance.now() + 600, dur = 3300;
       let last = -1;
       (function step(now) {
@@ -156,8 +150,7 @@
         const v = Math.round(p * 100);
         if (v !== last) {
           last = v;
-          const s = String(v);
-          num.innerHTML = (s.length < 3 ? '<i>' + '0'.repeat(3 - s.length) + '</i>' : '') + s;
+          num.innerHTML = dig(v, 3);
         }
         const g = p >= .97 ? 3 : p >= .6 ? 2 : p >= .3 ? 1 : 0;
         if (g !== stage) setStage(g);
@@ -182,19 +175,19 @@
   {
     const els = $$('[data-count],[data-date]');
     const bootOn = document.documentElement.classList.contains('boot-on');
-    const ease = t => 1 - Math.pow(1 - t, 4);
     els.forEach(el => {
       const isDate = !!el.dataset.date;
       const target = isDate ? el.dataset.date.split('.').map(Number) : [Number(el.dataset.count)];
-      const fmt = v => target.map(n => String(Math.round(n * v)).padStart(2, '0')).join(isDate ? '.' : '');
-      if (reduce) { el.textContent = fmt(1); return; }
-      el.textContent = fmt(0);
+      const len = String(target[0]).length;
+      const fmt = v => isDate ? target.map(n => String(Math.round(n * v)).padStart(2, '0')).join('.') : dig(Math.round(target[0] * v), len);
+      if (reduce) { el.innerHTML = fmt(1); return; }
+      el.innerHTML = fmt(0);
       const dur = isDate ? 2000 : 1500;
       const begin = () => setTimeout(() => {
         const t0 = performance.now();
         (function f(now) {
           const t = Math.min((now - t0) / dur, 1);
-          el.textContent = fmt(ease(t));
+          el.innerHTML = fmt(ease(t));
           if (t < 1) requestAnimationFrame(f); else el.classList.add('done');
         })(t0);
       }, bootOn ? 600 : 650);

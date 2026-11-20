@@ -43,6 +43,7 @@
   <link rel="stylesheet" href="/static/css/styles_short.css">
   {% block head %}{% endblock %}
   <script src="/static/js/guard.js"></script>
+  <script src="/static/js/script_pwa.js" defer></script>
   <script>document.documentElement.classList.add('js'); try { if (matchMedia('(min-width:1181px), (hover:hover) and (pointer:fine) and (min-width:700px), (orientation:landscape) and (min-aspect-ratio:3/2) and (min-width:700px)').matches) document.documentElement.classList.add('onescreen') } catch (e) {}{% if page == 'home' %} try { if (sessionStorage.getItem('boot') && !/[?&]boot\b/.test(location.search)) document.documentElement.classList.add('noboot'); else sessionStorage.setItem('boot', '1') } catch (e) { document.documentElement.classList.add('noboot') } setTimeout(function () { document.documentElement.classList.add('go') }, 12000){% else %} document.documentElement.classList.add('noboot', 'go'){% endif %}</script>
 </head>
 <body{% block bodyattrs %}{% endblock %}>

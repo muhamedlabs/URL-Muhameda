@@ -487,10 +487,16 @@ html.js:not(.noboot) .boot {
   text-shadow: 0 0 2.2rem rgba(var(--a),.35);
 }
 
+.lz,
 .boot-num i {
   font-style: normal;
   color: rgba(255,249,250,.14);
   text-shadow: none;
+}
+
+.facts b,
+.sh-rev b {
+  font-variant-numeric: tabular-nums;
 }
 
 .boot-num em {
