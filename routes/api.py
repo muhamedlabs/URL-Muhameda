@@ -17,6 +17,9 @@ _hits = defaultdict(deque)
 
 def _limited(ip: str, limit: int = 12, window: int = 60) -> bool:
     now = time.time()
+    if len(_hits) > 5000:                      # чистим старые IP, чтобы память не росла бесконечно
+        for k in [k for k, v in _hits.items() if not v or now - v[-1] > window]:
+            _hits.pop(k, None)
     q = _hits[ip]
     while q and now - q[0] > window:
         q.popleft()
@@ -34,7 +37,16 @@ COOKIE = "mid"
 
 
 def _client_ip() -> str:
-    return request.headers.get("CF-Connecting-IP") or request.remote_addr or ""
+    fwd = request.headers.get("X-Forwarded-For", "").split(",")[0].strip()
+    return request.headers.get("CF-Connecting-IP") or fwd or request.remote_addr or ""
+
+
+def _is_self(url: str) -> bool:
+    h = host_of(url).lower()
+    own = {request.host.split(":")[0].lower()}
+    if settings.PUBLIC_BASE_URL:
+        own.add(host_of(settings.PUBLIC_BASE_URL).lower())
+    return h in own
 
 
 def _owner(create: bool = False):
@@ -61,7 +73,7 @@ def shorten():
     url = normalize_url(raw)
     if not url:
         return _json({"error": "url_invalid"}, 400)
-    if host_of(url) == request.host.split(":")[0]:
+    if _is_self(url):
         return _json({"error": "url_self"}, 400)
     ip = _client_ip()
     if _limited(ip or "?"):
@@ -92,7 +104,7 @@ def edit(code):
     url = normalize_url((request.get_json(silent=True) or {}).get("url"))
     if not url:
         return _json({"error": "url_invalid"}, 400)
-    if host_of(url) == request.host.split(":")[0]:
+    if _is_self(url):
         return _json({"error": "url_self"}, 400)
     owner, _ = _owner()
     try:
