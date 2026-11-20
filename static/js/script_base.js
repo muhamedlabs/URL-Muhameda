@@ -99,4 +99,45 @@
       if (!reduce) frame();
     }
   }
+  {
+    const box = $('#bgimg');
+    if (box) {
+      let list = [];
+      try { list = JSON.parse(box.dataset.bg || '[]'); } catch (e) {}
+      if (list.length) {
+        const gl = document.createElement('div');
+        gl.className = 'gl';
+        box.appendChild(gl);
+        let cur = null, idx = -1, busy = false;
+        const next = () => {
+          if (busy) return;
+          busy = true;
+          const i = (idx + 1) % list.length, src = list[i];
+          const im = new Image();
+          im.onload = () => {
+            idx = i;
+            const el = document.createElement('i');
+            el.style.backgroundImage = 'url("' + src + '")';
+            box.insertBefore(el, gl);
+            const old = cur;
+            if (old) { old.classList.remove('on'); old.classList.add('prev'); }
+            void el.offsetWidth;
+            el.classList.add('on');
+            if (old && !reduce) { el.classList.add('glt'); box.classList.add('tr'); }
+            cur = el;
+            setTimeout(() => {
+              if (old) old.remove();
+              el.classList.remove('glt');
+              box.classList.remove('tr');
+              busy = false;
+            }, 1900);
+          };
+          im.onerror = () => { idx = i; busy = false; };
+          im.src = src;
+        };
+        next();
+        if (list.length > 1 && !reduce) setInterval(next, 9000);
+      }
+    }
+  }
 })();

@@ -19,7 +19,6 @@
   --a: 253,24,67;
   --pink-d: #c90f33;
   --bg: #222222;
-  --deep: #121212;
   --line: rgba(255,249,250,.12);
   --soft: #e6dfe1;
   --muted: #a39a9d;
@@ -224,15 +223,6 @@ svg {
   display: none;
 }
 
-.ico.big {
-  width: 5.4rem;
-  height: 5.4rem;
-}
-
-.ico.big .mono {
-  font-size: 1.9rem;
-}
-
 .ar {
   width: 1.05rem;
   height: 1.05rem;
@@ -377,7 +367,7 @@ i.fa-solid.ar.fa-globe {
   display: flex;
   align-items: center;
   gap: .6rem;
-  width: min(80rem,100% - 2.5rem);
+  width: min(84rem,100% - 2.5rem);
 }
 
 .hdr .in {
@@ -874,8 +864,6 @@ i.fa-solid.ar.fa-globe {
   text-align: left;
 }
 
-/* Квадратик с кодом языка: срез угла нарисован градиентом (без clip-path),
-   поэтому форма одинакова и в покое, и при наведении, и во время анимации меню */
 .lg .code {
   --cut: .32rem;
   --code-fill: rgba(255,249,250,.07);
@@ -956,7 +944,7 @@ i.fa-solid.ar.fa-globe {
   transform: rotate(-45deg);
 }
 
-@media (min-width:1001px) and (max-width:1280px) {
+@media (min-width:1001px) and (max-width:1280px){
   .nav>a,
   .dd-btn {
     padding: 0 .55rem;
@@ -970,8 +958,7 @@ i.fa-solid.ar.fa-globe {
 
   .logo small {
     display: none;
-  }
-}
+  }}
 
 .hero {
   position: relative;
@@ -1110,11 +1097,10 @@ i.fa-solid.ar.fa-globe {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
+@media (prefers-reduced-motion: reduce){
   .lead .ln {
     animation: none;
-  }
-}
+  }}
 
 .hdr .in > .logo,
 .hdr .in > a.logo {
@@ -1125,7 +1111,7 @@ i.fa-solid.ar.fa-globe {
   min-width: 0;
 }
 
-@media (min-width: 1181px) {
+@media (min-width: 1181px){
   html:lang(ru) .nav,
   html:lang(uk) .nav {
     gap: .1rem;
@@ -1139,10 +1125,9 @@ i.fa-solid.ar.fa-globe {
     gap: .35rem;
     font-size: .6rem;
     letter-spacing: .01em;
-  }
-}
+  }}
 
-@media (min-width: 1181px) and (max-width: 1599px) {
+@media (min-width: 1181px) and (max-width: 1599px){
   html:lang(ru) .hdr .in,
   html:lang(uk) .hdr .in {
     gap: .8rem;
@@ -1151,10 +1136,9 @@ i.fa-solid.ar.fa-globe {
   html:lang(ru) .logo small,
   html:lang(uk) .logo small {
     display: none;
-  }
-}
+  }}
 
-@media (min-width: 1181px) and (max-width: 1299px) {
+@media (min-width: 1181px) and (max-width: 1299px){
   html:lang(ru) .nav>a,
   html:lang(uk) .nav>a,
   html:lang(ru) .nav .dd>.dd-btn,
@@ -1162,15 +1146,7 @@ i.fa-solid.ar.fa-globe {
     padding: 0 .35rem;
     font-size: .54rem;
     letter-spacing: 0;
-  }
-}
-
-
-.cta {
-  display: flex;
-  justify-content: center;
-  margin-top: 1.8rem;
-}
+  }}
 
 .btn {
   position: relative;
@@ -1258,7 +1234,7 @@ i.fa-solid.ar.fa-globe {
   }
 }
 
-@media (prefers-reduced-motion:reduce) {
+@media (prefers-reduced-motion:reduce){
   *,
   *::before,
   *::after {
@@ -1274,8 +1250,7 @@ i.fa-solid.ar.fa-globe {
   .btn::after,
   .kick::after {
     display: none;
-  }
-}
+  }}
 
 html {
   -webkit-user-select: none;
@@ -1290,9 +1265,7 @@ textarea {
   user-select: text;
 }
 
-@media print {
+@media print{
   body {
     display: none!important;
-  }
-}
-
+  }}

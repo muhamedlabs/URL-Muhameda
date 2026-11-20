@@ -5,20 +5,35 @@
 
   {
     $$('[data-type]').forEach(el => {
+      const box = el.parentElement;
       let i = 0, j = 0, del = false, id = 0;
       const words = () => JSON.parse(el.dataset.type);
       const run = () => {
         const my = ++id;
         i = 0; j = 0; del = false;
+        box.classList.remove('is-typing');
         if (reduce) { el.textContent = words()[0]; return; }
         (function tick() {
           if (my !== id) return;
-          const s = words()[i];
+          if (document.hidden) { setTimeout(tick, 400); return; }
+          const w = words(), s = w[i % w.length];
           el.textContent = s.slice(0, j);
-          if (!del && j < s.length) { j++; setTimeout(tick, 65); }
-          else if (!del) { del = true; setTimeout(tick, 1600); }
-          else if (j > 0) { j--; setTimeout(tick, 30); }
-          else { del = false; i = (i + 1) % words().length; setTimeout(tick, 300); }
+          if (!del && j < s.length) {
+            box.classList.add('is-typing');
+            const ch = s[j++];
+            const d = 38 + Math.random() * 42 + (/[,.:;!?]/.test(ch) ? 190 : 0) + (ch === ' ' ? 18 : 0);
+            setTimeout(tick, d);
+          } else if (!del) {
+            box.classList.remove('is-typing');
+            del = true; setTimeout(tick, 2300);
+          } else if (j > 0) {
+            box.classList.add('is-typing');
+            j--;
+            setTimeout(tick, 30);
+          } else {
+            box.classList.remove('is-typing');
+            del = false; i = (i + 1) % w.length; setTimeout(tick, 420);
+          }
         })();
       };
       el.addEventListener('retype', run);
