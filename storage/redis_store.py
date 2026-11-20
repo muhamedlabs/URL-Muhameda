@@ -1,51 +1,36 @@
-"""Хранилище ссылок.
+"""Хранилище ссылок на обычном redis-клиенте (без ashredis).
 
-Записи ссылок (адрес, даты, автор) хранятся через ashredis.
-Всё, что ashredis не умеет атомарно, остаётся на обычном redis-клиенте:
+Каждая ссылка — hash `shorten_links_database:Links:<код>`.
   * Index   — множество кодов; SADD возвращает 1 только одному из параллельных запросов,
               поэтому два человека не получат один и тот же короткий код;
   * Clicks  — счётчики переходов (HINCRBY);
   * Owners  — какие ссылки создал владелец;
   * Stats   — общая статистика.
-Публичные функции этого модуля остались прежними, routes/* менять не нужно.
+Резервная копия всех ссылок пишется в DATA_FILE; при запуске недостающие ссылки восстанавливаются из неё.
 """
-import asyncio
 import hashlib
 import json
 import os
 import threading
 import time
-from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Dict, Optional
 
 import redis
-from ashredis import MISSING, RecordBase, RedisObject, RedisParams
 
 import settings
 
 ROOT = "shorten_links_database:"
 PREV_ROOT = "MuhamedLabs:URL:"
-LINKS = ROOT + "Links:"          # старые хеши (до ashredis), нужны только для миграции
+LINKS = ROOT + "Links:"
 OWNERS = ROOT + "Owners:"
 STATS = ROOT + "Stats"
 INDEX = ROOT + "Index"
 CLICKS = ROOT + "Clicks"
-MIGRATED = ROOT + "AshMigrated"
 LEGACY = "Url:"
 LEGACY_IDX = "UrlIdx:"
 
 FIELDS = ("short_id", "original_url", "created_at", "updated_at", "created_by", "created_ip")
-
-
-@dataclass
-class LinkRecord(RecordBase):
-    short_id: Optional[str] = MISSING
-    original_url: Optional[str] = MISSING
-    created_at: Optional[str] = MISSING
-    updated_at: Optional[str] = MISSING
-    created_by: Optional[str] = MISSING
-    created_ip: Optional[str] = MISSING
 
 
 _lock = threading.Lock()
@@ -54,58 +39,17 @@ _mem: Dict[str, str] = {}
 _file_cache = {"mtime": 0.0, "data": {}}
 _state = {"redis_ok": None, "last_error": "", "last_backup": 0.0}
 
-# ---- ashredis работает в asyncio, Flask — синхронный: держим один фоновый event loop ----
-_loop: Optional[asyncio.AbstractEventLoop] = None
-_loop_lock = threading.Lock()
-
-
-def _get_loop() -> asyncio.AbstractEventLoop:
-    global _loop
-    with _loop_lock:
-        if _loop is None:
-            loop = asyncio.new_event_loop()
-            threading.Thread(target=loop.run_forever, daemon=True, name="ashredis-loop").start()
-            _loop = loop
-        return _loop
-
-
-def _run(coro, timeout: float = 6.0):
-    return asyncio.run_coroutine_threadsafe(coro, _get_loop()).result(timeout)
-
-
-def _params() -> RedisParams:
-    return RedisParams(host=settings.REDIS_HOST, port=settings.REDIS_PORT,
-                       password=settings.REDIS_PASSWORD or "", db=settings.REDIS_DB)
-
-
-def _val(v):
-    return None if v is MISSING or v is None else v
-
-
-async def _a_save(code: str, rec: dict) -> None:
-    async with RedisObject(redis_params=_params()) as ro:
-        await ro.save(record=LinkRecord(**{k: rec.get(k) for k in FIELDS}), key=code)
-
-
-async def _a_load(code: str) -> Optional[dict]:
-    async with RedisObject(redis_params=_params()) as ro:
-        try:
-            r = await ro.load(record_type=LinkRecord, key=code)
-        except (KeyError, LookupError):
-            return None
-    if r is None:
-        return None
-    out = {k: _val(getattr(r, k, None)) for k in FIELDS}
-    return out if out["original_url"] else None
-
-
-async def _a_delete(code: str) -> None:
-    async with RedisObject(redis_params=_params()) as ro:
-        await ro.delete(record_type=LinkRecord, key=code)
-
-
 def _load(code: str) -> Optional[dict]:
-    return _run(_a_load(code))
+    h = client().hgetall(LINKS + code)
+    if not h or not h.get("original_url"):
+        return None
+    return {k: (h.get(k) or None) for k in FIELDS}
+
+
+def _save(code: str, rec: dict) -> None:
+    mapping = {"id": code}
+    mapping.update({k: (rec.get(k) or "") for k in FIELDS})
+    client().hset(LINKS + code, mapping=mapping)
 
 
 def client() -> redis.Redis:
@@ -251,7 +195,7 @@ def create(code: str, url: str, owner: str = "", ip: str = "", created_at: str =
            "created_at": created_at or now, "updated_at": updated_at or created_at or now,
            "created_by": owner, "created_ip": ip}
     try:
-        _run(_a_save(code, rec))
+        _save(code, rec)
     except Exception:
         r.srem(INDEX, code)              # не оставляем «пустой» код в индексе
         raise
@@ -269,7 +213,7 @@ def update(code: str, url: str, owner: str) -> str:
     if not owner or rec.get("created_by") != owner:
         return "forbidden"
     rec.update(original_url=url, updated_at=_now())
-    _run(_a_save(code, rec))
+    _save(code, rec)
     _mem[code] = url
     return "ok"
 
@@ -325,47 +269,26 @@ def migrate_legacy() -> int:
     return moved
 
 
-def migrate_to_ashredis() -> int:
-    """Разово переносит старые хеши в ashredis. Старые ключи не удаляются.
-    Перед переносом делает резервную копию в DATA_FILE."""
+def sync_storage() -> int:
+    """Идемпотентно: все хеши ссылок попадают в Index, а ссылки, которых нет в Redis, берутся из резервного файла."""
     r = client()
-    if r.get(MIGRATED):
-        return 0
-    old = _raw_old_hashes()
-    if not old:
-        r.set(MIGRATED, _now())
-        return 0
-    _write_file(old)
     n = 0
-    for code, v in old.items():
-        rec = {k: v.get(k) for k in FIELDS}
-        rec["short_id"] = rec["short_id"] or _short(code)
-        _run(_a_save(code, rec))
+    for code, v in _raw_old_hashes().items():
         r.sadd(INDEX, code)
-        if v.get("clicks"):
+        if v.get("clicks") and not r.hexists(CLICKS, code):
             r.hset(CLICKS, code, v["clicks"])
+    for code, rec in _read_file().items():
+        if r.exists(LINKS + code):
+            continue
+        now = _now()
+        _save(code, {"short_id": rec.get("short_id") or _short(code), "original_url": rec["original_url"],
+                     "created_at": rec.get("created_at") or now, "updated_at": rec.get("updated_at") or rec.get("created_at") or now,
+                     "created_by": rec.get("created_by") or "legacy", "created_ip": rec.get("created_ip") or ""})
+        r.sadd(INDEX, code)
         n += 1
-    r.set(MIGRATED, _now())
-    print(f"[MIGRATE] перенесено в ashredis: {n}")
+    if n:
+        print(f"[SYNC] восстановлено из файла: {n}")
     return n
-
-
-def seed_from_file() -> int:
-    try:
-        if count():
-            return 0
-        n = 0
-        for code, rec in _read_file().items():
-            if create(code, rec["original_url"], rec.get("created_by", "legacy"), rec.get("created_ip", ""),
-                      rec.get("created_at", ""), rec.get("updated_at", "")):
-                n += 1
-        if n:
-            print(f"[SEED] {n}")
-        return n
-    except redis.RedisError as e:
-        _mark(False, str(e))
-        print("[SEED] Redis:", e)
-        return 0
 
 
 def backup_once() -> bool:
