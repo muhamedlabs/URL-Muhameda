@@ -1,161 +1,144 @@
-import os
-import json
-import threading
-from flask import Blueprint, request, jsonify, redirect
-from utils.helpers import generate_short_code, is_valid_url
-from BANNED_FILES.config import RedisManager, DATA_FILE
-from redis_storage.url import Url  
+import time
+from collections import defaultdict, deque
 
-api_bp = Blueprint('api', __name__)
+import secrets
 
-# ---------------------------
-# FILE STORAGE
-# ---------------------------
+from flask import Blueprint, jsonify, request
 
-lock = threading.Lock()  # Для потокобезопасного доступа
+import settings
+from storage import redis_store as store
+from utils.helpers import generate_short_code, host_of, is_valid_code, normalize_url
 
-def load_all_urls():
-    """Загрузка всех URL из файла"""
-    if not os.path.exists(DATA_FILE):
-        return []
-    with lock:
-        try:
-            with open(DATA_FILE, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-                return [Url(**item) for item in data]
-        except Exception as e:
-            print(f"Error loading data file: {e}")
-            return []
+api_bp = Blueprint("api", __name__)
 
-def save_all_urls(urls):
-    """Сохраняем все URL в файл"""
-    with lock:
-        try:
-            with open(DATA_FILE, 'w', encoding='utf-8') as f:
-                json.dump([{'id': u.id, 'original_url': u.original_url} for u in urls],
-                          f, ensure_ascii=False, indent=4)
-        except Exception as e:
-            print(f"Error saving data file: {e}")
 
-def save_url(record):
-    """Добавляем новый URL и сохраняем"""
-    urls = load_all_urls()
-    urls.append(record)
-    save_all_urls(urls)
+_hits = defaultdict(deque)
 
-def find_by_code(code):
-    """Поиск URL по короткому коду"""
-    urls = load_all_urls()
-    for url in urls:
-        if url.id == code:
-            return url
-    return None
 
-def find_by_original(original_url):
-    """Поиск URL по оригинальному адресу"""
-    urls = load_all_urls()
-    for url in urls:
-        if url.original_url == original_url:
-            return url
-    return None
+def _limited(ip: str, limit: int = 12, window: int = 60) -> bool:
+    now = time.time()
+    q = _hits[ip]
+    while q and now - q[0] > window:
+        q.popleft()
+    if len(q) >= limit:
+        return True
+    q.append(now)
+    return False
 
-# ---------------------------
-# ROUTES
-# ---------------------------
 
-@api_bp.route('/api/shorten', methods=['POST'])
-def shorten_url():
+def _base() -> str:
+    return settings.PUBLIC_BASE_URL or request.host_url.rstrip("/")
+
+
+COOKIE = "mid"
+
+
+def _client_ip() -> str:
+    return request.headers.get("CF-Connecting-IP") or request.remote_addr or ""
+
+
+def _owner(create: bool = False):
+    token = request.cookies.get(COOKIE)
+    fresh = False
+    if not token and create:
+        token, fresh = secrets.token_urlsafe(24), True
+    return (store.owner_id(token) if token else ""), (token if fresh else None)
+
+
+def _json(payload, status=200):
+    resp = jsonify(payload)
+    resp.status_code = status
+    resp.headers["Cache-Control"] = "no-store"
+    return resp
+
+
+@api_bp.post("/api/shorten")
+def shorten():
+    data = request.get_json(silent=True) or {}
+    raw = data.get("url")
+    if not raw:
+        return _json({"error": "url_required"}, 400)
+    url = normalize_url(raw)
+    if not url:
+        return _json({"error": "url_invalid"}, 400)
+    if host_of(url) == request.host.split(":")[0]:
+        return _json({"error": "url_self"}, 400)
+    ip = _client_ip()
+    if _limited(ip or "?"):
+        return _json({"error": "rate_limited"}, 429)
+    owner, token = _owner(create=True)
     try:
-        data = request.get_json()
-        if not data or 'url' not in data:
-            return jsonify({'error': 'URL is required'}), 400
-
-        original_url = data['url'].strip()
-        if not original_url:
-            return jsonify({'error': 'URL cannot be empty'}), 400
-
-        if not original_url.startswith(('http://', 'https://')):
-            original_url = 'https://' + original_url
-
-        if not is_valid_url(original_url):
-            return jsonify({'error': 'Invalid URL format'}), 400
-
-        existing = find_by_original(original_url)
-        if existing:
-            return jsonify({
-                'short_code': existing.id,
-                'original_url': existing.original_url,
-                'short_url': request.host_url + existing.id
-            }), 200
-
-        # Генерация уникального кода
-        urls = load_all_urls()
-        short_code = generate_short_code()
-        existing_codes = [url.id for url in urls]
-        attempts = 0
-        while short_code in existing_codes and attempts < 10:
-            short_code = generate_short_code()
-            attempts += 1
-        if attempts >= 10:
-            return jsonify({'error': 'Could not generate unique code'}), 500
-
-        new_url = Url(id=short_code, original_url=original_url)
-        save_url(new_url)
-
-        return jsonify({
-            'short_code': short_code,
-            'original_url': original_url,
-            'short_url': request.host_url + short_code
-        }), 201
-
+        code = None
+        for _ in range(12):
+            c = generate_short_code()
+            if store.create(c, url, owner, ip):
+                code = c
+                break
+        if not code:
+            return _json({"error": "server"}, 500)
     except Exception as e:
-        print("Error in /shorten:", e)
-        return jsonify({'error': 'Internal server error'}), 500
+        print("[API] shorten error:", e)
+        return _json({"error": "storage_down"}, 503)
+    resp = _json({"short_code": code, "original_url": url, "short_url": f"{_base()}/{code}"}, 201)
+    if token:
+        resp.set_cookie(COOKIE, token, max_age=60 * 60 * 24 * 365, httponly=True, samesite="Lax", secure=request.is_secure)
+    return resp
 
-@api_bp.route('/<string:short_code>')
-def redirect_to_url(short_code):
+
+@api_bp.patch("/api/links/<code>")
+def edit(code):
+    if not is_valid_code(code):
+        return _json({"error": "missing"}, 404)
+    url = normalize_url((request.get_json(silent=True) or {}).get("url"))
+    if not url:
+        return _json({"error": "url_invalid"}, 400)
+    if host_of(url) == request.host.split(":")[0]:
+        return _json({"error": "url_self"}, 400)
+    owner, _ = _owner()
     try:
-        if len(short_code) != 7:
-            return "Invalid short code", 404
-
-        record = find_by_code(short_code)
-        if record:
-            return redirect(record.original_url, code=302)
-        return "Short URL not found", 404
+        res = store.update(code, url, owner)
     except Exception as e:
-        print("Redirect error:", e)
-        return "Short URL not found", 404
+        print("[API] edit error:", e)
+        return _json({"error": "storage_down"}, 503)
+    if res != "ok":
+        return _json({"error": res}, 404 if res == "missing" else 403)
+    return _json({"short_code": code, "original_url": url, "short_url": f"{_base()}/{code}"})
 
-@api_bp.route('/api/stats')
-def get_stats():
+
+@api_bp.get("/api/mine")
+def mine():
+    owner, _ = _owner()
+    if not owner:
+        return _json({"links": []})
     try:
-        urls = load_all_urls()
-        return jsonify({
-            'total_urls': len(urls),
-            'urls': [
-                {
-                    'short_code': u.id,
-                    'original_url': u.original_url,
-                    'short_url': request.host_url + u.id
-                } for u in urls
-            ]
-        })
-    except Exception as e:
-        print("Stats error:", e)
-        return jsonify({'error': 'Internal server error'}), 500
+        items = store.by_owner(owner)
+    except Exception:
+        return _json({"error": "storage_down"}, 503)
+    return _json({"links": [{"id": i["id"], "short_url": f"{_base()}/{i['id']}", "original_url": i.get("original_url"),
+                             "created_at": i.get("created_at")} for i in items]})
 
-@api_bp.route('/api/health')
+
+@api_bp.get("/api/resolve/<code>")
+def resolve(code):
+    if not is_valid_code(code):
+        return _json({"ok": False}, 404)
+    url = store.get_url(code)
+    if not url:
+        return _json({"ok": False}, 404)
+    safe = normalize_url(url)
+    if not safe:
+        return _json({"ok": False, "error": "unsafe"}, 404)
+    return _json({"ok": True, "url": safe, "host": host_of(safe), "short_url": f"{_base()}/{code}"})
+
+
+@api_bp.get("/api/stats")
+def stats():
+    return _json({"total_urls": store.count()})
+
+
+@api_bp.get("/api/health")
 def health():
-    try:
-        urls = load_all_urls()
-        return jsonify({
-            'status': 'healthy',
-            'storage': 'file',
-            'total_urls': len(urls)
-        })
-    except Exception as e:
-        return jsonify({
-            'status': 'unhealthy',
-            'storage': 'file',
-            'error': str(e)
-        }), 500
+    n = store.count()
+    st = store.status()
+    return _json({"status": "healthy" if st["redis_ok"] else "degraded", "storage": "redis",
+                  "total_urls": n, "redis": bool(st["redis_ok"])}, 200 if st["redis_ok"] else 503)
