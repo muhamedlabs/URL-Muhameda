@@ -161,27 +161,5 @@
   }
   oneScreen();
 
-    function backdrop() {
-    const box = $('#bgimg');
-    if (!box || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const plates = [...box.querySelectorAll('i')];
-    let n = 0;
-    const swap = () => {
-      const old = plates[n];
-      n = (n + 1) % plates.length;
-      const nxt = plates[n];
-      old.classList.remove('on'); old.classList.add('prev');
-      nxt.classList.add('on', 'glt');
-      setTimeout(() => { old.classList.remove('prev'); nxt.classList.remove('glt'); }, 1500);
-    };
-    window.__bgTransition = () => {
-      box.classList.add('tr');
-      setTimeout(swap, 550);
-      setTimeout(() => box.classList.remove('tr'), 1900);
-    };
-    setInterval(() => { if (!document.hidden) window.__bgTransition(); }, 12000);
-  }
-  backdrop();
-
   if (PAGE === 'home') home(); else if (PAGE === 'go') seekPage();
 })();

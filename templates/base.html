@@ -3,16 +3,19 @@
 <head>
     <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>{% block title %}Сокращатель ссылок | Мухамед Ads{% endblock %}</title>
-  <meta name="description" content="{% block desc %}Сокращатель ссылок сети Мухамед Ads. Один аккуратный адрес вместо длинной ссылки: вставьте, нажмите и делитесь с кем угодно.{% endblock %}">
+  <title>{% block title %}Мухамед Ads — креативно-технологическая сеть | Сократитель{% endblock %}</title>
+  <meta name="description" content="{% block desc %}Предоставляем удобный инструмент для создания коротких ссылок, упрощая обмен адресами и делая переход к нужным ресурсам быстрее и комфортнее.{% endblock %}">
   {% block robots %}<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">{% endblock %}
   {% block canonical %}<link rel="canonical" href="{{ site_url }}/">{% endblock %}
-  <meta name="keywords" content="сокращатель ссылок, короткие ссылки, сократить ссылку, Мухамед Ads, link shortener, short url">
+  <meta name="keywords" content="сокращатель ссылок, сократить ссылку онлайн, короткие ссылки, скоротити посилання, link shortener, short url, Мухамед Ads">
   <meta name="author" content="Мухамед Ads">
   <meta name="application-name" content="Мухамед Ads">
   <meta name="theme-color" content="#222222">
+  <meta name="format-detection" content="telephone=no">
+  <link rel="preconnect" href="https://kit.fontawesome.com" crossorigin>
   <meta name="color-scheme" content="dark">
   <link rel="icon" type="image/webp" href="/static/logo.webp">
+  <link rel="manifest" href="/manifest.webmanifest">
   <link rel="apple-touch-icon" href="/static/logo.webp">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Мухамед Ads">
@@ -20,22 +23,24 @@
   <meta property="og:locale:alternate" content="uk_UA">
   <meta property="og:locale:alternate" content="en_US">
   <meta property="og:url" content="{{ site_url }}/">
-  <meta property="og:title" content="{{ self.title() }}">
+  <meta property="og:title" content="{% block ogtitle %}Умный сокращатель ссылок{% endblock %}">
   <meta property="og:description" content="{{ self.desc() }}">
-  <meta property="og:image" content="{{ site_url }}/static/images/SEO_1.webp">
+  <meta property="og:image" content="{{ site_url }}/static/images/twitter/SEO_4.webp">
   <meta property="og:image:width" content="1920">
   <meta property="og:image:height" content="1080">
-  <meta property="og:image:alt" content="Сокращатель ссылок сети Мухамед Ads">
+  <meta property="og:image:alt" content="Умный сокращатель ссылок">
+  <meta property="og:image:type" content="image/webp">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="{{ self.title() }}">
+  <meta name="twitter:title" content="{{ self.ogtitle() }}">
   <meta name="twitter:description" content="{{ self.desc() }}">
-  <meta name="twitter:image" content="{{ site_url }}/static/images/SEO_1.webp">
+  <meta name="twitter:image:alt" content="Умный сокращатель ссылок">
+  <meta name="twitter:image" content="{{ site_url }}/static/images/twitter/SEO_4.webp">
   {% block jsonld %}<script type="application/ld+json">{{ jsonld|safe }}</script>{% endblock %}
-  <link rel="stylesheet" href="/static/css/styles_base.css?v=20261228">
-  <link rel="stylesheet" href="/static/css/styles_home.css?v=20261228">
-  <link rel="stylesheet" href="/static/css/responsive_base.css?v=20261228">
-  <link rel="stylesheet" href="/static/css/responsive_home.css?v=20261228">
-  <link rel="stylesheet" href="/static/css/styles_short.css?v=20261228">
+  <link rel="stylesheet" href="/static/css/styles_base.css?v=20261120">
+  <link rel="stylesheet" href="/static/css/styles_home.css?v=20261120">
+  <link rel="stylesheet" href="/static/css/responsive_base.css?v=20261120">
+  <link rel="stylesheet" href="/static/css/responsive_home.css?v=20261120">
+  <link rel="stylesheet" href="/static/css/styles_short.css?v=20261120">
   {% block head %}{% endblock %}
   <script>document.documentElement.classList.add('js'); try { if (matchMedia('(min-width:1181px), (hover:hover) and (pointer:fine) and (min-width:700px), (orientation:landscape) and (min-aspect-ratio:3/2) and (min-width:700px)').matches) document.documentElement.classList.add('onescreen') } catch (e) {}{% if page == 'home' %} try { if (sessionStorage.getItem('boot') && !/[?&]boot\b/.test(location.search)) document.documentElement.classList.add('noboot'); else sessionStorage.setItem('boot', '1') } catch (e) { document.documentElement.classList.add('noboot') } setTimeout(function () { document.documentElement.classList.add('go') }, 12000){% else %} document.documentElement.classList.add('noboot', 'go'){% endif %}</script>
 </head>
@@ -44,7 +49,7 @@
     <i class="boot-panel boot-panel-l"></i>
     <i class="boot-panel boot-panel-r"></i>
   </div>
-  <div class="bgimg" id="bgimg" aria-hidden="true"><i class="g1 on"></i><i class="g2"></i><i class="g3"></i><b class="gl"></b></div>
+  <div class="bgimg" id="bgimg" aria-hidden="true"></div>
   <div class="spot" aria-hidden="true"></div>
   <canvas id="bg"></canvas>
   <div class="veil"></div>
@@ -60,10 +65,10 @@
     </div>
   </main>
   <script src="https://kit.fontawesome.com/87b9cd76ed.js" crossorigin="anonymous" defer></script>
-  <script src="/static/js/lang_short.js?v=20261228"></script>
-  <script src="/static/js/script_lang.js?v=20261228"></script>
-  <script src="/static/js/script_base.js?v=20261228"></script>
-  <script src="/static/js/script_home.js?v=20261228"></script>
-  <script src="/static/js/script_short.js?v=20261228"></script>
+  <script src="/static/js/lang_short.js?v=20261120"></script>
+  <script src="/static/js/script_lang.js?v=20261120"></script>
+  <script src="/static/js/script_base.js?v=20261120"></script>
+  <script src="/static/js/script_home.js?v=20261120"></script>
+  <script src="/static/js/script_short.js?v=20261120"></script>
 </body>
 </html>

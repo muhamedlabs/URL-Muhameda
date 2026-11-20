@@ -1,5 +1,8 @@
 {% extends "base.html" %}
 {% set page = "home" %}
+{% block title %}Мухамед Ads — креативно-технологическая сеть | Сократитель{% endblock %}
+{% block jsonld %}<script type="application/ld+json">{{ jsonld|safe }}</script>
+  <script type="application/ld+json">{{ faq_jsonld|safe }}</script>{% endblock %}
 {% block main %}
     <section class="hero">
      <div class="fit" id="fit">
@@ -66,6 +69,25 @@
         </div>
       </div>
      </div>
+     <a class="more" href="#about" aria-label="Как это работает"><span data-i18n="more">Как это работает</span><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></a>
+    </section>
+
+    <section class="seo" id="about">
+      <div class="seo-in">
+        <h2 data-i18n="sx_h">Как работает сокращатель ссылок</h2>
+        <p class="seo-p" data-i18n="sx_p">Бесплатный сервис коротких ссылок без регистрации: вставьте длинный адрес и получите компактную ссылку, которой удобно делиться в мессенджерах, соцсетях и на любых площадках.</p>
+        <ol class="seo-steps">
+          <li><b>01</b><h3 data-i18n="st1t">Вставьте адрес</h3><p data-i18n="st1p">Скопируйте любую длинную ссылку с http или https и вставьте её в поле выше.</p></li>
+          <li><b>02</b><h3 data-i18n="st2t">Нажмите «Сократить»</h3><p data-i18n="st2p">Короткая ссылка создаётся за мгновение и сразу копируется в буфер обмена.</p></li>
+          <li><b>03</b><h3 data-i18n="st3t">Делитесь</h3><p data-i18n="st3p">Отправляйте ссылку друзьям и клиентам — переход работает на любых устройствах.</p></li>
+        </ol>
+        <h2 data-i18n="fq_h">Частые вопросы</h2>
+        <div class="faq">
+          {% for q, a in faq %}
+          <details><summary data-i18n="q{{ loop.index }}">{{ q }}</summary><p data-i18n="a{{ loop.index }}">{{ a }}</p></details>
+          {% endfor %}
+        </div>
+      </div>
     </section>
   <div class="toast" id="toast" role="status" aria-live="polite"><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span id="toastTx"></span></div>
 {% endblock %}

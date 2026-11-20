@@ -274,9 +274,6 @@ html.onescreen .shorten { margin-top: 1.3rem; }
   opacity: 0;
   background: center/cover no-repeat;
 }
-.bgimg i.g1 { background-image: url("../images/background/g1.webp"); }
-.bgimg i.g2 { background-image: url("../images/background/g2.webp"); }
-.bgimg i.g3 { background-image: url("../images/background/g3.webp"); }
 .bgimg i.prev { opacity: 1; z-index: 1; }
 .bgimg i.on { opacity: 1; z-index: 2; transition: opacity 1.3s cubic-bezier(.4,0,.2,1); }
 .bgimg::after { z-index: 4; background: var(--bg-dark); }
@@ -451,3 +448,69 @@ html.js:not(.noboot):not(.go) .sk-top,
 html.js:not(.noboot):not(.go) .sk-bar,
 html.js:not(.noboot):not(.go) .sk-steps li { animation-play-state: paused; }
 @media (prefers-reduced-motion: reduce) { .hline, .sh-top, .sh-field, .sh-stats > div, .sk-top, .sk-bar, .sk-steps li { animation: none; } }
+
+/* ===== SEO-блок, FAQ и общие улучшения ===== */
+html { scroll-behavior: smooth; }
+::selection { background: var(--pink); color: #fff; }
+a:focus-visible, button:focus-visible, summary:focus-visible, input:focus-visible {
+  outline: 2px solid var(--pink); outline-offset: 3px;
+}
+
+/* на десктопе главная раньше была заблокирована на один экран — теперь hero занимает экран, а ниже можно прокрутить к тексту */
+html.onescreen[data-page="home"], html.onescreen[data-page="home"] body {
+  height: auto; min-height: 100%; overflow-x: hidden; overflow-y: auto;
+}
+html.onescreen[data-page="home"] .hero { margin-inline: auto; }
+
+.more {
+  position: absolute; left: 50%; bottom: 4.7rem; transform: translateX(-50%);
+  display: inline-flex; flex-direction: column; align-items: center; gap: .35rem;
+  font: 600 .72rem var(--head); letter-spacing: .14em; text-transform: uppercase;
+  color: var(--muted); text-decoration: none; transition: color .25s;
+}
+.more i { color: var(--pink); animation: more-bob 1.8s ease-in-out infinite; }
+.more:hover { color: var(--white); }
+@keyframes more-bob { 50% { transform: translateY(5px); } }
+@media (max-height: 680px), (max-width: 699px) { .more { display: none; } }
+
+.seo { position: relative; z-index: 2; padding: clamp(3rem, 8vw, 6rem) 0 7.5rem; scroll-margin-top: var(--hdr); }
+.seo-in { width: min(62rem, 100% - 3rem); margin-inline: auto; }
+.seo h2 {
+  font: 800 clamp(1.5rem, 3.4vw, 2.3rem)/1.15 var(--head); color: var(--white);
+  margin: 0 0 1rem; padding-left: 1rem; border-left: 4px solid var(--pink);
+}
+.seo h2:not(:first-child) { margin-top: clamp(2.5rem, 6vw, 4rem); }
+.seo-p { color: var(--soft); font-size: 1.05rem; line-height: 1.7; max-width: 46rem; margin-bottom: 2rem; }
+
+.seo-steps { list-style: none; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.seo-steps li {
+  position: relative; padding: 1.4rem 1.3rem 1.5rem; overflow: hidden;
+  background: linear-gradient(160deg, rgba(255,249,250,.07), rgba(255,249,250,.02));
+  border: 1px solid var(--line); backdrop-filter: blur(6px);
+  clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, 0 100%);
+  transition: transform .3s var(--ease), border-color .3s;
+}
+.seo-steps li:hover { transform: translateY(-4px); border-color: rgba(var(--a), .55); }
+.seo-steps b { display: block; font: 800 2.4rem/1 var(--head); color: rgba(var(--a), .9); margin-bottom: .8rem; }
+.seo-steps h3 { font: 700 1.1rem var(--head); color: var(--white); margin-bottom: .45rem; }
+.seo-steps p { color: var(--muted); line-height: 1.55; font-size: .95rem; }
+
+.faq { display: grid; gap: .6rem; }
+.faq details {
+  border: 1px solid var(--line); background: rgba(255,249,250,.035); transition: border-color .25s, background .25s;
+}
+.faq details[open] { border-color: rgba(var(--a), .5); background: rgba(var(--a), .06); }
+.faq summary {
+  list-style: none; cursor: pointer; padding: 1rem 3rem 1rem 1.2rem; position: relative;
+  font: 600 1.02rem var(--head); color: var(--white);
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after {
+  content: "+"; position: absolute; right: 1.2rem; top: 50%; transform: translateY(-50%);
+  font: 400 1.6rem/1 var(--head); color: var(--pink); transition: transform .25s;
+}
+.faq details[open] summary::after { transform: translateY(-50%) rotate(45deg); }
+.faq details p { padding: 0 1.2rem 1.2rem; color: var(--soft); line-height: 1.65; }
+
+@media (max-width: 760px) { .seo-steps { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .more i { animation: none; } }
