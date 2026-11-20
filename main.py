@@ -18,6 +18,7 @@ app.register_blueprint(pages_bp)
 
 
 def _backgrounds() -> list:
+    """Все картинки из static/images/background (1.webp, 2.webp, 3.webp ...), по порядку номеров."""
     d = os.path.join(settings.BASE_DIR, "static", "images", "background")
     try:
         names = [n for n in os.listdir(d) if n.lower().endswith((".webp", ".jpg", ".jpeg", ".png"))]

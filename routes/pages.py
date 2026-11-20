@@ -1,7 +1,8 @@
 import json
+import os
 from datetime import date
 
-from flask import Blueprint, Response, abort, make_response, redirect, render_template, request
+from flask import Blueprint, Response, abort, make_response, redirect, render_template, request, send_from_directory
 
 import settings
 from storage import redis_store as store
@@ -40,10 +41,22 @@ def robots():
 
 @pages_bp.get("/manifest.webmanifest")
 def manifest():
-    data = {"name": "Мухамед Ads · сокращатель ссылок", "short_name": "Сокращатель", "start_url": "/",
+    icon = lambda src, size, purpose="any": {"src": src, "sizes": f"{size}x{size}", "type": "image/png", "purpose": purpose}
+    data = {"id": "/", "name": "Мухамед Ads · сокращатель ссылок", "short_name": "Сокращатель",
+            "description": "Умный сокращатель ссылок Мухамед Ads", "start_url": "/", "scope": "/",
             "display": "standalone", "background_color": "#222222", "theme_color": "#222222", "lang": "ru",
-            "icons": [{"src": "/static/logo.webp", "sizes": "900x900", "type": "image/webp"}]}
-    return Response(json.dumps(data, ensure_ascii=False), mimetype="application/manifest+json")
+            "icons": [icon("/static/icons/pwa-192.png", 192), icon("/static/icons/pwa-512.png", 512),
+                      icon("/static/icons/pwa-maskable-512.png", 512, "maskable")]}
+    resp = Response(json.dumps(data, ensure_ascii=False), mimetype="application/manifest+json")
+    resp.headers["Cache-Control"] = "public, max-age=3600"
+    return resp
+
+
+@pages_bp.get("/sw.js")
+def service_worker():
+    resp = send_from_directory(os.path.join(settings.BASE_DIR, "static", "js"), "sw.js", mimetype="application/javascript")
+    resp.headers["Cache-Control"] = "no-cache"
+    return resp
 
 
 @pages_bp.get("/sitemap.xml")
