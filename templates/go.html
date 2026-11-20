@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% set page = "missing" if missing else "go" %}
+{% block robots %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+{% block canonical %}{% endblock %}
+{% block jsonld %}{% endblock %}
+{% block head %}{% if code and not missing %}<noscript><meta http-equiv="refresh" content="{{ delay + 1 }};url=/go/{{ code }}"></noscript>{% endif %}{% endblock %}
+{% block bodyattrs %}{% if missing %} data-missing="1"{% else %} data-code="{{ code }}" data-delay="{{ delay }}"{% endif %}{% endblock %}
+{% block main %}
+    <section class="hero">
+     <div class="fit" id="fit">
+      <div class="hero-c">
+        <p class="kick rise" style="--d:.05s"><i class="pulse"></i> <span data-i18n="kick">Перенаправление трафика</span></p>
+        <h1 class="rise" style="--d:.12s"><span class="hrow2"><span class="hbox glitch" data-i18n="h1a" data-text="Редирект" id="h1a">Редирект</span><span class="hmid glitch" data-i18n="h1b" data-text="трафика" id="h1b">трафика</span></span><i class="hbar" aria-hidden="true"></i><span class="hline" data-i18n="h1c" id="h1c">маршрут построен — летим к вашей цели</span></h1>
+        <p class="typed rise" style="--d:.3s"><span class="t" data-type='["Расшифровываем короткий код","Прокладываем маршрут к цели","Запускаем переход — держитесь"]'></span><i class="caret"></i></p>
+        <p class="lead rise" data-i18n="lead" style="--d:.4s">Трафик уже в пути — осталось несколько мгновений.
+Не закрывайте вкладку: переход начнётся автоматически.</p>
+      </div>
+
+      <div class="shorten seek rise" style="--d:.5s" id="seek" data-state="{{ 'nf' if missing else 'search' }}">
+        <div class="sh-top">
+          <span class="sh-tag"><i class="pulse"></i><span data-i18n="sht">Маршрутизатор ссылок</span></span>
+          <span class="sh-rev"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i><span data-i18n="f3">ревизия</span><b data-date="20.08.26">20.08.26</b><em class="ago" data-ago="20.08.26"></em></span>
+        </div>
+        <div class="sk-body">
+          <div class="sk-top">
+            {% if missing %}<p class="sk-nf" data-i18n="nf">Такой ссылки не существует</p>{% else %}<b class="sk-num"><span id="skNum">00</span><em>%</em></b>
+            <span class="sh-flow sk-flow" aria-hidden="true"><em class="from">{{ request.host }}/{{ code }}</em><i class="line"><b></b></i><em class="to" data-i18n="dst">пункт назначения</em></span>{% endif %}
+            <a class="btn sk-new" href="/"><span data-i18n="b2">Сократить ссылку</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
+          </div>
+          {% if not missing %}
+          <div class="sk-bar" aria-hidden="true"><i id="skBar"></i></div>
+          <p class="sk-msg" id="skMsg" hidden></p>
+          <div class="sk-act" id="skAct" hidden>
+            <button class="btn" type="button" id="skRetry"><span data-i18n="retry">Повторить</span><i class="fa-solid fa-rotate-right" aria-hidden="true"></i></button>
+          </div>
+          {% endif %}
+        </div>
+        {% if not missing %}
+        <ol class="sk-steps" id="skSteps">
+          <li><i class="fa-solid fa-fingerprint" aria-hidden="true"></i><span data-i18n="sk1">Расшифровка кода</span></li>
+          <li><i class="fa-solid fa-database" aria-hidden="true"></i><span data-i18n="sk2">Запрос в хранилище</span></li>
+          <li><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><span data-i18n="sk3">Прокладка маршрута</span></li>
+          <li><i class="fa-solid fa-route" aria-hidden="true"></i><span data-i18n="sk4">Запуск перехода</span></li>
+        </ol>
+        {% endif %}
+      </div>
+     </div>
+    </section>
+{% endblock %}

@@ -1,0 +1,125 @@
+{% set yt = {
+  'game_quest': 'https://www.youtube.com/results?search_query=Game+Quest',
+  'nanson': 'https://www.youtube.com/results?search_query=Nanson',
+  'streamus': 'https://www.youtube.com/results?search_query=Streamus',
+  'anime_industry': 'https://www.youtube.com/results?search_query=Anime+Industry',
+  'kino_industry': 'https://www.youtube.com/results?search_query=Kino+Industry'
+} %}
+<header class="hdr">
+    <div class="wrap hrow">
+      <div class="in">
+        <a class="logo" href="/" aria-label="Мухамед Ads">
+          <span class="logo-mk">
+            <img class="logo-img" src="/static/icons/icon-m-pink.webp" alt="" onerror="this.remove()">
+            <i class="mono">M</i>
+          </span>
+          <span class="logo-w">
+            <span class="logo-t glitch" data-brand data-text="Мухамед Ads">Мухамед <b>Ads</b></span>
+            <small data-i18n="net">Креативная и технологическая сеть</small>
+          </span>
+        </a>
+        <button class="burger" aria-label="Меню" aria-expanded="false">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+        <div class="bar">
+          <nav class="nav">
+            <a href="https://law.muhamedlabs.pro/"><span data-i18n="n1">Правила сети</span></a>
+            <a href="https://link.muhamedlabs.pro"><span data-i18n="n4">Мультиссылка</span></a>
+            <a href="https://status.muhamedlabs.pro"><span data-i18n="n2">Мониторинг сети</span></a>
+            <a href="https://help.muhamedlabs.pro"><span data-i18n="n6">Частые вопросы</span></a>
+            <div class="dd">
+              <button class="dd-btn" aria-haspopup="true" aria-expanded="false">
+                <span data-i18n="n3">YouTube-проекты</span>
+                <i class="fa-solid fa-chevron-down chev" aria-hidden="true"></i>
+              </button>
+              <div class="dd-panel" role="menu">
+                <div class="dd-head"><span data-i18n="n3">YouTube-проекты</span><span>05</span></div>
+                <a class="dd-item" style="--i:0;--c:196,245,66" href="{{ yt.game_quest }}" target="_blank" rel="noopener" role="menuitem">
+                  <span class="ico">
+                    <img src="/static/images/channels/Game_Quest.webp" alt="" onerror="this.remove()">
+                    <i class="mono">GQ</i>
+                  </span>
+                  <span class="tx">
+                    <b data-text="Game Quest">Game Quest</b>
+                    <small data-i18n="s1">Игровые новости и обзоры</small>
+                  </span>
+                  <i class="fa-solid fa-arrow-right ar" aria-hidden="true"></i>
+                </a>
+                <a class="dd-item" style="--i:1;--c:168,85,247" href="{{ yt.nanson }}" target="_blank" rel="noopener" role="menuitem">
+                  <span class="ico">
+                    <img src="/static/images/channels/Nanson.webp" alt="" onerror="this.remove()">
+                    <i class="mono">NA</i>
+                  </span>
+                  <span class="tx">
+                    <b data-text="Nanson">Nanson</b>
+                    <small data-i18n="s2">Свободная музыка с драйвом</small>
+                  </span>
+                  <i class="fa-solid fa-arrow-right ar" aria-hidden="true"></i>
+                </a>
+                <a class="dd-item" style="--i:2;--c:255,152,71" href="{{ yt.streamus }}" target="_blank" rel="noopener" role="menuitem">
+                  <span class="ico">
+                    <img src="/static/images/channels/Streamus.webp" alt="" onerror="this.remove()">
+                    <i class="mono">СТ</i>
+                  </span>
+                  <span class="tx">
+                    <b data-i18n="nm3" data-text="Стримус">Стримус</b>
+                    <small data-i18n="s3">Эфиры и общение со зрителями</small>
+                  </span>
+                  <i class="fa-solid fa-arrow-right ar" aria-hidden="true"></i>
+                </a>
+                <a class="dd-item" style="--i:3;--c:71,163,255" href="{{ yt.anime_industry }}" target="_blank" rel="noopener" role="menuitem">
+                  <span class="ico">
+                    <img src="/static/images/channels/ANIME_INDUSTRY.webp" alt="" onerror="this.remove()">
+                    <i class="mono">AI</i>
+                  </span>
+                  <span class="tx">
+                    <b data-text="Anime Industry">Anime Industry</b>
+                    <small data-i18n="s4">Обзоры и подборки аниме</small>
+                  </span>
+                  <i class="fa-solid fa-arrow-right ar" aria-hidden="true"></i>
+                </a>
+                <a class="dd-item" style="--i:4;--c:255,205,64" href="{{ yt.kino_industry }}" target="_blank" rel="noopener" role="menuitem">
+                  <span class="ico">
+                    <img src="/static/images/channels/KINO_INDUSTRY.webp" alt="" onerror="this.remove()">
+                    <i class="mono">KI</i>
+                  </span>
+                  <span class="tx">
+                    <b data-text="Kino Industry">Kino Industry</b>
+                    <small data-i18n="s5">Кино, сериалы и мультфильмы</small>
+                  </span>
+                  <i class="fa-solid fa-arrow-right ar" aria-hidden="true"></i>
+                </a>
+              </div>
+            </div>
+          </nav>
+        </div>
+      </div>
+      <div class="dd dd-lang">
+        <button class="dd-btn" aria-haspopup="true" aria-expanded="false" aria-label="Language">
+          <i class="fa-solid fa-globe ar" aria-hidden="true"></i>
+          <span class="lang-cur">RU</span>
+          <i class="fa-solid fa-chevron-down chev" aria-hidden="true"></i>
+        </button>
+        <div class="dd-panel" role="menu">
+          <div class="dd-head"><span data-i18n="n5">Язык</span><span>03</span></div>
+          <button type="button" class="dd-item lg on" data-lang="ru" style="--i:0;--c:253,24,67" role="menuitem">
+            <span class="code">RU</span>
+            <span class="tx"><b>Русский</b></span>
+            <i class="fa-solid fa-check ar" aria-hidden="true"></i>
+          </button>
+          <button type="button" class="dd-item lg" data-lang="uk" style="--i:1;--c:253,24,67" role="menuitem">
+            <span class="code">UA</span>
+            <span class="tx"><b>Українська</b></span>
+            <i class="fa-solid fa-check ar" aria-hidden="true"></i>
+          </button>
+          <button type="button" class="dd-item lg" data-lang="en" style="--i:2;--c:253,24,67" role="menuitem">
+            <span class="code">EN</span>
+            <span class="tx"><b>English</b></span>
+            <i class="fa-solid fa-check ar" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>

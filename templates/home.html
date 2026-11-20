@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% set page = "home" %}
+{% block main %}
+    <section class="hero">
+     <div class="fit" id="fit">
+      <div class="hero-c">
+        <p class="kick rise" style="--d:.05s"><i class="pulse"></i> <span data-i18n="kick">Умный сокращатель сети</span></p>
+        <h1 class="rise" style="--d:.12s"><span class="hrow2"><span class="hbox glitch" data-i18n="h1a" data-text="Умные">Умные</span><span class="hmid glitch" data-i18n="h1b" data-text="ссылки">ссылки</span></span><i class="hbar" aria-hidden="true"></i><span class="hline" data-i18n="h1c">превращайте длинные адреса в короткие</span></h1>
+        <p class="typed rise" style="--d:.3s"><span class="t" data-type='["Вставьте длинный адрес","Нажмите — адрес сожмётся","Ссылка в буфере — делитесь"]'></span><i class="caret"></i></p>
+        <p class="lead rise" data-i18n="lead" style="--d:.4s">Любой длинный адрес — в одну короткую ссылку за мгновение.
+Она копируется сама — вам остаётся только отправить её дальше.</p>
+      </div>
+
+      <div class="shorten rise" style="--d:.5s" id="shorten">
+        <div class="sh-top">
+          <span class="sh-tag"><i class="pulse"></i><span data-i18n="sht">Умный сокращатель</span></span>
+          <span class="sh-flow" aria-hidden="true">
+            <em class="from">https://example.com/very/long/link?utm=…</em>
+            <i class="line"><b></b></i>
+            <em class="to">{{ request.host }}/aB3xK</em>
+          </span>
+          <span class="sh-proto">HTTP · HTTPS</span>
+        </div>
+
+        <form class="sh-form" id="shForm" novalidate>
+          <label class="sh-lb" for="shUrl"><i class="fa-solid fa-link st-i" aria-hidden="true"></i><span data-i18n="fl">Длинная ссылка</span></label>
+          <div class="sh-row">
+            <span class="sh-field">
+              <i class="fa-solid fa-globe sh-fi" aria-hidden="true"></i>
+              <input class="sh-in" id="shUrl" name="url" type="url" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="2048" placeholder="https://example.com/a/very/long/link" required>
+            </span>
+            <button class="btn sh-go" type="submit" id="shGo">
+              <span data-i18n="go">Сократить</span>
+              <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+            </button>
+          </div>
+          <p class="sh-hint" id="shHint" hidden></p>
+          <p class="sh-err" id="shErr" role="alert" hidden></p>
+        </form>
+
+        <div class="sh-res" id="shRes" hidden>
+          <span class="sh-lb"><i class="fa-solid fa-circle-check st-i" aria-hidden="true"></i><span data-i18n="res">Ваша короткая ссылка</span></span>
+          <div class="sh-row">
+            <a class="sh-short" id="shShort" href="#" target="_blank" rel="noopener"></a>
+            <button class="btn sh-cp" type="button" id="shCopy">
+              <span data-i18n="cp">Копировать</span>
+              <i class="fa-solid fa-copy" aria-hidden="true"></i>
+            </button>
+            <button class="btn sh-cp sh-ic" type="button" id="shAgain" data-tt="again"><i class="fa-solid fa-rotate-right" aria-hidden="true"></i></button>
+          </div>
+        </div>
+
+        <div class="sh-stats">
+          <div>
+            <b data-count="{{ count }}">{{ count }}</b>
+            <span class="lb"><i class="fa-solid fa-link st-i" aria-hidden="true"></i><span data-i18n="f1">ссылок создано в сети</span></span>
+          </div>
+          <div>
+            <b data-count="{{ visits }}">{{ visits }}</b>
+            <span class="lb"><i class="fa-solid fa-arrow-pointer st-i" aria-hidden="true"></i><span data-i18n="f2">переходов по ссылкам</span></span>
+          </div>
+          <div>
+            <b data-count="{{ top }}">{{ top }}</b>
+            <span class="lb"><i class="fa-solid fa-fire st-i" aria-hidden="true"></i><span data-i18n="f4">переходов у самой популярной ссылки</span></span>
+          </div>
+        </div>
+      </div>
+     </div>
+    </section>
+  <div class="toast" id="toast" role="status" aria-live="polite"><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span id="toastTx"></span></div>
+{% endblock %}
