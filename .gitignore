@@ -1,8 +1,8 @@
 **/__pycache__/
-.vscode
-
-
-
+.vscode/
 .env
-BANNED_FILES/config.py
+
+
+
+BANNED_FILES/.env
 BANNED_FILES/url_storage.json
