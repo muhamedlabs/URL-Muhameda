@@ -255,7 +255,6 @@ def migrate_legacy() -> int:
 
 
 def sync_storage() -> int:
-    """Идемпотентно: все хеши ссылок попадают в Index, а ссылки, которых нет в Redis, берутся из резервного файла."""
     r = client()
     n = 0
     for code, v in _raw_old_hashes().items():
