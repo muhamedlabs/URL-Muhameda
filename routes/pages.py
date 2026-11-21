@@ -32,11 +32,16 @@ def home():
                            delay=settings.REDIRECT_DELAY)
 
 
+def _static_file(name, mimetype):
+    resp = send_from_directory(os.path.join(settings.BASE_DIR, "static"), name, mimetype=mimetype)
+    resp.headers["Cache-Control"] = "public, max-age=3600"
+    return resp
+
+
 @pages_bp.get("/robots.txt")
 def robots():
-    base = settings.PUBLIC_BASE_URL or request.host_url.rstrip("/")
-    body = f"User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /go/\nDisallow: /*?boot\n\nSitemap: {base}/sitemap.xml\n"
-    return Response(body, mimetype="text/plain")
+    """Файл лежит отдельно: static/robots.txt"""
+    return _static_file("robots.txt", "text/plain")
 
 
 @pages_bp.get("/manifest.webmanifest")
@@ -57,12 +62,8 @@ def service_worker():
 
 @pages_bp.get("/sitemap.xml")
 def sitemap():
-    base = settings.PUBLIC_BASE_URL or request.host_url.rstrip("/")
-    body = ('<?xml version="1.0" encoding="UTF-8"?>\n'
-            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-            f'  <url><loc>{base}/</loc><lastmod>{date.today().isoformat()}</lastmod><changefreq>weekly</changefreq><priority>1.0</priority></url>\n'
-            '</urlset>\n')
-    return Response(body, mimetype="application/xml")
+    """Файл лежит отдельно: static/sitemap.xml (дату lastmod меняйте руками при обновлении сайта)"""
+    return _static_file("sitemap.xml", "application/xml")
 
 
 @pages_bp.get("/go/<code>")

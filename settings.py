@@ -19,3 +19,8 @@ DATA_FILE = os.environ.get("DATA_FILE") or os.path.join(BANNED_DIR, "url_storage
 PUBLIC_BASE_URL = (os.environ.get("PUBLIC_BASE_URL") or "").rstrip("/")
 REDIRECT_DELAY = max(0, int(os.environ.get("REDIRECT_DELAY", "5")))
 BACKUP_EVERY = int(os.environ.get("BACKUP_EVERY", "60"))
+
+# SEO: коды подтверждения сайта в вебмастерах (необязательно, кладите в BANNED_FILES/.env)
+GOOGLE_VERIFY = os.environ.get("GOOGLE_SITE_VERIFICATION", "")
+YANDEX_VERIFY = os.environ.get("YANDEX_VERIFICATION", "")
+BING_VERIFY = os.environ.get("BING_VERIFICATION", "")

@@ -41,7 +41,9 @@ def seo():
             {"@type": "Organization", "@id": f"{base}/#org", "name": "Мухамед Ads",
              "alternateName": ["Muhamed Ads", "Мухамед Ads"], "url": "https://muhamedlabs.pro",
              "logo": f"{base}/static/logo.webp",
-             "description": "Креативная и технологическая сеть"},
+             "description": "Креативная и технологическая сеть",
+             "sameAs": ["https://www.youtube.com/@GameQuest_news", "https://www.youtube.com/@Nanson_CFM", "https://www.youtube.com/@Streamas",
+                        "https://www.youtube.com/@ANIME_INDUSTRY_UA", "https://www.youtube.com/@KINO_INDUSTRY_UA"]},
             {"@type": "WebSite", "@id": f"{base}/#site", "url": f"{base}/", "name": "Мухамед Ads · сокращатель ссылок",
              "alternateName": "Сокращатель ссылок Мухамед Ads", "inLanguage": ["ru", "uk", "en"],
              "publisher": {"@id": f"{base}/#org"}},
@@ -51,6 +53,7 @@ def seo():
              "description": "Предоставляем удобный инструмент для создания коротких ссылок, упрощая обмен адресами и делая переход к нужным ресурсам быстрее и комфортнее.",
              "image": f"{base}/static/images/twitter/SEO_4.webp",
              "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+             "isAccessibleForFree": True,
              "featureList": ["Сокращение длинных ссылок", "Автокопирование результата", "Поддержка http и https",
                              "Редактирование адреса автором", "Интерфейс на русском, украинском и английском"],
              "publisher": {"@id": f"{base}/#org"}},
@@ -59,7 +62,8 @@ def seo():
 
     dumped = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
     bgs = _backgrounds()
-    return {"site_url": base, "jsonld": dumped, "bg_json": json.dumps(bgs), "bg_first": bgs[0] if bgs else ""}
+    verify = {"google": settings.GOOGLE_VERIFY, "yandex": settings.YANDEX_VERIFY, "bing": settings.BING_VERIFY}
+    return {"site_url": base, "verify": verify, "jsonld": dumped, "bg_json": json.dumps(bgs), "bg_first": bgs[0] if bgs else ""}
 
 
 @app.after_request
@@ -67,6 +71,8 @@ def secure(resp):
     resp.headers.setdefault("X-Content-Type-Options", "nosniff")
     resp.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
     resp.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    if request.path.startswith(("/api/", "/go/")):
+        resp.headers["X-Robots-Tag"] = "noindex, nofollow"
     if request.path.startswith("/static/") and resp.status_code == 200:
         resp.headers["Cache-Control"] = "public, max-age=2592000" if request.args.get("v") else "public, max-age=3600"
     elif request.path.startswith("/api/") or resp.mimetype == "text/html":
