@@ -14,14 +14,28 @@
   <meta name="format-detection" content="telephone=no">
   <link rel="preconnect" href="https://kit.fontawesome.com" crossorigin>
   <meta name="color-scheme" content="dark">
+  {% if verify.google %}<meta name="google-site-verification" content="{{ verify.google }}">{% endif %}
+  {% if verify.yandex %}<meta name="yandex-verification" content="{{ verify.yandex }}">{% endif %}
+  {% if verify.bing %}<meta name="msvalidate.01" content="{{ verify.bing }}">{% endif %}
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Сокращатель">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="msapplication-TileColor" content="#222222">
+  <meta name="rating" content="general">
+  <link rel="sitemap" type="application/xml" href="/sitemap.xml">
+  <link rel="preload" href="/static/fonts/kharkiv_tone.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="icon" type="image/webp" href="/static/logo.webp">
+  <link rel="icon" type="image/png" sizes="192x192" href="/static/icons/pwa-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/static/icons/pwa-512.png">
   <link rel="manifest" href="/manifest.webmanifest">
-  <link rel="apple-touch-icon" href="/static/logo.webp">
+  <link rel="apple-touch-icon" sizes="192x192" href="/static/icons/pwa-192.png">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Мухамед Ads">
   <meta property="og:locale" content="ru_RU">
   <meta property="og:locale:alternate" content="uk_UA">
   <meta property="og:locale:alternate" content="en_US">
+  <meta property="article:publisher" content="https://muhamedlabs.pro">
   <meta property="og:url" content="{{ site_url }}/">
   <meta property="og:title" content="{% block ogtitle %}Умный сокращатель ссылок{% endblock %}">
   <meta property="og:description" content="{{ self.desc() }}">
@@ -47,6 +61,7 @@
   <script>document.documentElement.classList.add('js'); try { if (matchMedia('(max-width:699px), (min-width:1181px), (hover:hover) and (pointer:fine) and (min-width:700px), (orientation:landscape) and (min-aspect-ratio:3/2) and (min-width:700px)').matches) document.documentElement.classList.add('onescreen') } catch (e) {}{% if page == 'home' %} try { if (sessionStorage.getItem('boot') && !/[?&]boot\b/.test(location.search)) document.documentElement.classList.add('noboot'); else sessionStorage.setItem('boot', '1') } catch (e) { document.documentElement.classList.add('noboot') } setTimeout(function () { document.documentElement.classList.add('go') }, 12000){% else %} document.documentElement.classList.add('noboot', 'go'){% endif %}</script>
 </head>
 <body{% block bodyattrs %}{% endblock %}>
+  <noscript><h1>Мухамед Ads — умный сокращатель ссылок</h1><p>Вставьте длинный адрес и получите короткую ссылку. Для работы сервиса включите JavaScript.</p></noscript>
   <div class="boot" aria-hidden="true">
     <i class="boot-panel boot-panel-l"></i>
     <i class="boot-panel boot-panel-r"></i>
