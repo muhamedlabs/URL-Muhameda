@@ -41,13 +41,9 @@ def robots():
 
 @pages_bp.get("/manifest.webmanifest")
 def manifest():
-    icon = lambda src, size, purpose="any": {"src": src, "sizes": f"{size}x{size}", "type": "image/png", "purpose": purpose}
-    data = {"id": "/", "name": "Мухамед Ads · сокращатель ссылок", "short_name": "Сокращатель",
-            "description": "Умный сокращатель ссылок Мухамед Ads", "start_url": "/", "scope": "/",
-            "display": "standalone", "background_color": "#222222", "theme_color": "#222222", "lang": "ru",
-            "icons": [icon("/static/icons/pwa-192.png", 192), icon("/static/icons/pwa-512.png", 512),
-                      icon("/static/icons/pwa-maskable-512.png", 512, "maskable")]}
-    resp = Response(json.dumps(data, ensure_ascii=False), mimetype="application/manifest+json")
+    """Манифест PWA лежит отдельным файлом: static/manifest.webmanifest (от него Chrome предлагает установку)."""
+    resp = send_from_directory(os.path.join(settings.BASE_DIR, "static"), "manifest.webmanifest",
+                               mimetype="application/manifest+json")
     resp.headers["Cache-Control"] = "public, max-age=3600"
     return resp
 

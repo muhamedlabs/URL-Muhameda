@@ -18,4 +18,4 @@ DATA_FILE = os.environ.get("DATA_FILE") or os.path.join(BANNED_DIR, "url_storage
 
 PUBLIC_BASE_URL = (os.environ.get("PUBLIC_BASE_URL") or "").rstrip("/")
 REDIRECT_DELAY = max(0, int(os.environ.get("REDIRECT_DELAY", "5")))
-BACKUP_EVERY = int(os.environ.get("BACKUP_EVERY", "300"))
+BACKUP_EVERY = int(os.environ.get("BACKUP_EVERY", "60"))

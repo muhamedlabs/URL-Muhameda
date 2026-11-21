@@ -28,6 +28,9 @@ _client: Optional[redis.Redis] = None
 _mem: Dict[str, str] = {}
 _file_cache = {"mtime": 0.0, "data": {}}
 _state = {"redis_ok": None, "last_error": "", "last_backup": 0.0}
+_bk_lock = threading.Lock()
+_bk_timer: Optional[threading.Timer] = None
+_bk_last = {"json": None} 
 
 def _load(code: str) -> Optional[dict]:
     h = client().hgetall(LINKS + code)
@@ -79,6 +82,7 @@ def visit(code: str) -> None:
             r.hincrby(STATS, "visits", 1)
             if n > int(r.hget(STATS, "top") or 0):
                 r.hset(STATS, "top", n)
+            schedule_backup(30.0)
     except redis.RedisError as e:
         _mark(False, str(e))
 
@@ -182,12 +186,13 @@ def create(code: str, url: str, owner: str = "", ip: str = "", created_at: str =
     try:
         _save(code, rec)
     except Exception:
-        r.srem(INDEX, code)              # не оставляем «пустой» код в индексе
+        r.srem(INDEX, code)            
         raise
     if owner and owner != "legacy":
         r.sadd(OWNERS + owner, code)
     r.hincrby(STATS, "created:" + _today(), 1)
     _mem[code] = url
+    schedule_backup()
     return True
 
 
@@ -200,6 +205,7 @@ def update(code: str, url: str, owner: str) -> str:
     rec.update(original_url=url, updated_at=_now())
     _save(code, rec)
     _mem[code] = url
+    schedule_backup()
     return "ok"
 
 
@@ -262,6 +268,8 @@ def sync_storage() -> int:
         if v.get("clicks") and not r.hexists(CLICKS, code):
             r.hset(CLICKS, code, v["clicks"])
     for code, rec in _read_file().items():
+        if rec.get("clicks") and not r.hexists(CLICKS, code) and r.exists(LINKS + code):
+            r.hset(CLICKS, code, rec["clicks"])
         if r.exists(LINKS + code):
             continue
         now = _now()
@@ -269,25 +277,97 @@ def sync_storage() -> int:
                      "created_at": rec.get("created_at") or now, "updated_at": rec.get("updated_at") or rec.get("created_at") or now,
                      "created_by": rec.get("created_by") or "legacy", "created_ip": rec.get("created_ip") or ""})
         r.sadd(INDEX, code)
+        if rec.get("clicks"):
+            r.hset(CLICKS, code, rec["clicks"])
         n += 1
     if n:
         print(f"[SYNC] восстановлено из файла: {n}")
     return n
 
 
-def backup_once() -> bool:
+def _snapshot() -> list:
+    """Полный слепок Redis: все ссылки + счётчики переходов (формат файла url_storage.json)."""
+    r = client()
+    clicks = r.hgetall(CLICKS) or {}
+    items = []
+    for code, rec in scan_all().items():
+        item = dict(rec, id=code)
+        item = {k: v for k, v in item.items() if v not in (None, "")}
+        n = int(clicks.get(code) or 0)
+        if n:
+            item["clicks"] = n
+        items.append(item)
+    return sorted(items, key=lambda i: i["id"])
+
+
+def _write_snapshot(items: list) -> None:
+    path = settings.DATA_FILE
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    text = json.dumps(items, ensure_ascii=False, indent=4)
     try:
-        data = scan_all()
+        if os.path.exists(path) and len(_read_file()) > len(items):
+            with open(path, "rb") as src, open(path + ".prev", "wb") as dst:
+                dst.write(src.read())
+    except OSError:
+        pass
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        f.write(text)
+        f.flush()
+        os.fsync(f.fileno())
+    os.replace(tmp, path)
+    _bk_last["json"] = text
+    try:
+        _file_cache.update(mtime=os.stat(path).st_mtime, data={i["id"]: i for i in items})
+    except OSError:
+        pass
+
+
+def backup_once() -> bool:
+    """Зеркалим Redis в url_storage.json. Пустой Redis файл не затирает."""
+    try:
+        items = _snapshot()
         _mark(True)
     except Exception as e:
         _mark(False, str(e))
         return False
-    if not data:
+    if not items:
         return False
-    if data != _file_cache["data"]:
-        _write_file(data)
+    text = json.dumps(items, ensure_ascii=False, indent=4)
+    if text != _bk_last["json"]:
+        try:
+            _write_snapshot(items)
+        except OSError as e:
+            print("[BACKUP] write error:", e)
+            return False
     _state["last_backup"] = time.time()
     return True
+
+
+def schedule_backup(delay: float = 3.0) -> None:
+    """Быстрое обновление файла после изменений: серия правок склеивается в одну запись."""
+    global _bk_timer
+    due = time.time() + delay
+    with _bk_lock:
+        if _bk_timer is not None and _bk_timer.is_alive():
+            if _bk_timer.due <= due:      
+                return
+            _bk_timer.cancel()        
+
+        def run():
+            global _bk_timer
+            with _bk_lock:
+                _bk_timer = None
+            try:
+                backup_once()
+            except Exception as e:
+                print("[BACKUP] error:", e)
+
+        t = threading.Timer(delay, run)
+        t.due = due
+        t.daemon = True
+        _bk_timer = t
+        t.start()
 
 
 def start_backup_thread() -> None:
