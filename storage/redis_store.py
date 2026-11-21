@@ -30,7 +30,7 @@ _file_cache = {"mtime": 0.0, "data": {}}
 _state = {"redis_ok": None, "last_error": "", "last_backup": 0.0}
 _bk_lock = threading.Lock()
 _bk_timer: Optional[threading.Timer] = None
-_bk_last = {"json": None} 
+_bk_last = {"json": None}   
 
 def _load(code: str) -> Optional[dict]:
     h = client().hgetall(LINKS + code)
@@ -177,7 +177,7 @@ def count() -> Optional[int]:
 
 def create(code: str, url: str, owner: str = "", ip: str = "", created_at: str = "", updated_at: str = "") -> bool:
     r = client()
-    if not r.sadd(INDEX, code):          # код уже занят
+    if not r.sadd(INDEX, code):    
         return False
     now = _now()
     rec = {"short_id": _short(code), "original_url": url,
@@ -186,7 +186,7 @@ def create(code: str, url: str, owner: str = "", ip: str = "", created_at: str =
     try:
         _save(code, rec)
     except Exception:
-        r.srem(INDEX, code)            
+        r.srem(INDEX, code)              
         raise
     if owner and owner != "legacy":
         r.sadd(OWNERS + owner, code)
@@ -304,6 +304,7 @@ def _write_snapshot(items: list) -> None:
     path = settings.DATA_FILE
     os.makedirs(os.path.dirname(path), exist_ok=True)
     text = json.dumps(items, ensure_ascii=False, indent=4)
+    # если ссылок вдруг стало заметно меньше, чем в файле, — сохраняем прошлую копию рядом (.prev)
     try:
         if os.path.exists(path) and len(_read_file()) > len(items):
             with open(path, "rb") as src, open(path + ".prev", "wb") as dst:
@@ -350,9 +351,9 @@ def schedule_backup(delay: float = 3.0) -> None:
     due = time.time() + delay
     with _bk_lock:
         if _bk_timer is not None and _bk_timer.is_alive():
-            if _bk_timer.due <= due:      
+            if _bk_timer.due <= due:        
                 return
-            _bk_timer.cancel()        
+            _bk_timer.cancel()           
 
         def run():
             global _bk_timer
