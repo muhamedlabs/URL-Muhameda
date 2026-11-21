@@ -510,3 +510,16 @@ a.dd-item:hover small, a.dd-item:focus-visible small { color: rgb(var(--c)); }
   .sk-msg { margin-top: .6rem; font-size: .85rem; }
 }
 @media (max-width: 699px){ .sh-rev { display: none; } }
+
+/* Телефон: страница перехода — процент и кнопка в одной строке */
+@media (max-width: 699px){
+  .seek:not([data-state="nf"]) .sk-top { flex-direction: row; align-items: center; justify-content: space-between; gap: .8rem; }
+  .seek:not([data-state="nf"]) .sk-top .sk-new { margin-left: auto; }
+  .sk-num { min-width: 0; font-size: clamp(1.7rem, 8vw, 2.2rem); }
+  .sk-new { height: 2.6rem; justify-content: flex-start; }
+  .sk-new span { padding: 0 .9rem 0 1.1rem; font-size: .66rem; letter-spacing: .06em; white-space: nowrap; }
+  .sk-new i { width: 2.6rem; }
+  .sk-bar { margin: .8rem 0 .1rem; }
+  .sk-body { padding: 1rem 1rem .9rem; }
+  .seek[data-state="nf"] .sk-body { padding: 1.2rem 1rem; }
+}

@@ -53,7 +53,7 @@
         b2: 'Сократить ссылку'
       },
       missing: {
-        nf: 'Сократите новую ссылку',
+        nf: 'Сократите новую ссылку', sht: 'Маршрутизатор ссылок',
         title: 'Ссылка не найдена | Мухамед Ads', desc: 'Такой короткой ссылки не существует.',
         kick: 'Ошибка 404', h1a: 'Ссылка', h1b: 'не найдена', h1c: 'такой короткой ссылки у нас нет',
         typed: ['Проверьте код в адресе ссылки', 'Возможно, ссылку уже удалили', 'Создайте новую за мгновение'],
@@ -90,7 +90,7 @@
         b2: 'Скоротити посилання'
       },
       missing: {
-        nf: 'Скоротіть нове посилання',
+        nf: 'Скоротіть нове посилання', sht: 'Маршрутизатор посилань',
         title: 'Посилання не знайдено | Мухамед Ads', desc: 'Такого короткого посилання не існує.',
         kick: 'Помилка 404', h1a: 'Посилання', h1b: 'не знайдено', h1c: 'такого короткого посилання немає',
         typed: ['Перевірте код в адресі посилання', 'Можливо, посилання вже видалили', 'Створіть нове за мить'],
@@ -127,7 +127,7 @@
         b2: 'Shorten a link'
       },
       missing: {
-        nf: 'Shorten a new link',
+        nf: 'Shorten a new link', sht: 'Link router',
         title: 'Link not found | Muhamed Ads', desc: 'This short link does not exist.',
         kick: 'Error 404', h1a: 'Link', h1b: 'not found', h1c: 'this short link does not exist',
         typed: ['Check the code in the link address', 'The link may have been removed already', 'Create a new one in a moment'],
