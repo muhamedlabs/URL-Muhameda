@@ -32,24 +32,39 @@ def home():
                            delay=settings.REDIRECT_DELAY)
 
 
-def _static_file(name, mimetype):
-    resp = send_from_directory(os.path.join(settings.BASE_DIR, "static"), name, mimetype=mimetype)
-    resp.headers["Cache-Control"] = "public, max-age=3600"
-    return resp
+def _find_file(name, mimetype, *subdirs):
+    """Ищем файл по очереди в указанных папках (относительно проекта) — берём первую, где он есть."""
+    for sub in subdirs:
+        d = os.path.join(settings.BASE_DIR, sub)
+        if os.path.isfile(os.path.join(d, name)):
+            resp = send_from_directory(d, name, mimetype=mimetype)
+            resp.headers["Cache-Control"] = "public, max-age=3600"
+            return resp
+    return None
 
 
 @pages_bp.get("/robots.txt")
 def robots():
-    """Файл лежит отдельно: static/robots.txt"""
-    return _static_file("robots.txt", "text/plain")
+    """Файл лежит в корне проекта: robots.txt"""
+    return _find_file("robots.txt", "text/plain", "", "static") or abort(404)
+
+
+_MANIFEST_FALLBACK = {
+    "id": "/", "name": "Мухамед Ads · Сокращатель ссылок", "short_name": "Сокращатель", "lang": "ru",
+    "start_url": "/", "scope": "/", "display": "standalone", "background_color": "#222222", "theme_color": "#222222",
+    "icons": [{"src": "/static/icons/pwa-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+              {"src": "/static/icons/pwa-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+              {"src": "/static/icons/pwa-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}],
+}
 
 
 @pages_bp.get("/manifest.webmanifest")
 def manifest():
-    """Манифест PWA лежит отдельным файлом: static/manifest.webmanifest (от него Chrome предлагает установку)."""
-    resp = send_from_directory(os.path.join(settings.BASE_DIR, "static"), "manifest.webmanifest",
-                               mimetype="application/manifest+json")
-    resp.headers["Cache-Control"] = "public, max-age=3600"
+    """Манифест PWA: файл static/js/manifest.webmanifest. Если файла нет — отдаём встроенный."""
+    resp = _find_file("manifest.webmanifest", "application/manifest+json", "static/js", "static", "")
+    if resp is None:
+        resp = Response(json.dumps(_MANIFEST_FALLBACK, ensure_ascii=False), mimetype="application/manifest+json")
+        resp.headers["Cache-Control"] = "public, max-age=3600"
     return resp
 
 
@@ -62,8 +77,8 @@ def service_worker():
 
 @pages_bp.get("/sitemap.xml")
 def sitemap():
-    """Файл лежит отдельно: static/sitemap.xml (дату lastmod меняйте руками при обновлении сайта)"""
-    return _static_file("sitemap.xml", "application/xml")
+    """Файл лежит в корне проекта: sitemap.xml (дату lastmod меняйте руками при обновлении сайта)"""
+    return _find_file("sitemap.xml", "application/xml", "", "static") or abort(404)
 
 
 @pages_bp.get("/go/<code>")
