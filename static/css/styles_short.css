@@ -461,3 +461,52 @@ a.dd-item:hover small, a.dd-item:focus-visible small { color: rgb(var(--c)); }
   a.dd-item::after, a.dd-item .ico, a.dd-item small { transition: none; }}
 
 .bgimg.st { background: #070708 var(--bg-img) center/cover no-repeat; }
+/* ===== Телефон: всё помещается на одном экране, без прокрутки ===== */
+@media (max-width: 699px){
+  html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
+  html.onescreen .hero {
+    width: calc(100% - 1.6rem);
+    justify-content: center;
+    padding: calc(var(--hdr) + .4rem) 0 calc(3.3rem + var(--sab));
+  }
+  html.onescreen .fit { top: 0; }
+
+  /* лишние элементы убраны */
+  .kick, .typed, .lead, .sh-proto, .sh-hint, .edge { display: none !important; }
+
+  .hero h1 { margin: 0 0 1.1rem; gap: .5rem; font-size: clamp(1.9rem, 9.5vw, 2.6rem); }
+  .hrow2 { flex-wrap: wrap; }
+  .hmid, .hbox { max-width: 100%; }
+  .hline { font-size: .4em; line-height: 1.35; letter-spacing: .14em; max-width: 19em; }
+  .hbar { margin: .35rem 0 .1rem; }
+  html.onescreen .hero h1 { margin: 0 0 1.1rem; }
+  html.onescreen .shorten { margin-top: 0; }
+
+  .sh-top { padding: .6rem 1rem; }
+  .sh-form { padding: 1rem 1rem 1.1rem; }
+  .sh-lb { margin-bottom: .55rem; font-size: .66rem; }
+
+  /* статистика — одна компактная строка из трёх ячеек */
+  .sh-stats { grid-template-columns: repeat(3, 1fr); }
+  .sh-stats > div { padding: .75rem .3rem; gap: .3rem; }
+  .sh-stats > div + div { border-left: 1px solid var(--line); border-top: 0; }
+  .sh-stats b { min-width: 0; font-size: 1.35rem; text-align: center; }
+  .sh-stats .lb { flex-direction: column; gap: .25rem; font-size: .6rem; line-height: 1.2; white-space: normal; text-align: center; }
+  .sh-stats .lb > span { flex: none; }
+
+  .mq { padding-top: .45rem; padding-bottom: calc(.45rem + var(--sab)); }
+  .mq-t span { font-size: .85rem; }
+  .toast { bottom: 4.2rem; }
+}
+@media (max-width: 699px) and (max-height: 600px){
+  .sh-stats .lb .st-i { display: none; }
+}
+
+@media (max-width: 699px){
+  .sk-body { padding: 1rem; }
+  .sk-steps { grid-template-columns: repeat(4, 1fr); }
+  .sk-steps li { padding: .7rem .2rem; font-size: .62rem; gap: .35rem; }
+  .sk-steps li + li { border-left: 1px solid var(--line); }
+  .sk-msg { margin-top: .6rem; font-size: .85rem; }
+}
+@media (max-width: 699px){ .sh-rev { display: none; } }

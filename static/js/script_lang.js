@@ -44,7 +44,7 @@
     get() { try { return localStorage.getItem('lang'); } catch (e) { return null; } },
     set(v) { try { localStorage.setItem('lang', v); } catch (e) {} }
   };
-  function apply(l) {
+  function apply(l, animate) {
     if (!D[l]) l = 'ru';
     const t = D[l];
     document.documentElement.lang = l;
@@ -60,6 +60,7 @@
           const sp = document.createElement('span');
           sp.className = 'ln';
           sp.style.setProperty('--li', i);
+          if (!animate) sp.style.animation = 'none';
           sp.textContent = ln;
           el.appendChild(sp);
         });
@@ -72,7 +73,7 @@
       el.innerHTML = t.brand + ' <b>Ads</b>';
       el.setAttribute('data-text', t.brand + ' Ads');
     });
-    $$('.typed .t').forEach(el => { el.dataset.type = JSON.stringify(t.typed); el.dispatchEvent(new Event('retype')); });
+    $$('.typed .t').forEach(el => { el.dataset.type = JSON.stringify(t.typed); el.dispatchEvent(new Event(animate ? 'retype' : 'relang')); });
     $$('.lang-cur').forEach(el => el.textContent = l === 'uk' ? 'UA' : l.toUpperCase());
     $$('[data-lang]').forEach(b => {
       const on = b.dataset.lang === l;
@@ -80,9 +81,9 @@
       b.setAttribute('aria-pressed', on);
     });
   }
-  function set(l) { store.set(l); apply(l); document.dispatchEvent(new Event('langchange')); }
+  function set(l) { store.set(l); apply(l, false); document.dispatchEvent(new Event('langchange')); }
   $$('[data-lang]').forEach(b => b.addEventListener('click', () => set(b.dataset.lang)));
   window.setLang = set;
   window.getLangDict = () => D[document.documentElement.lang] || D.ru;
-  apply(store.get() || 'ru');
+  apply(store.get() || 'ru', true);
 })();

@@ -135,7 +135,7 @@
     const el = $('#fit'), hero = $('.hero');
     if (!el || !hero) return;
     const root = document.documentElement;
-    const mq = matchMedia('(min-width:1181px), (hover:hover) and (pointer:fine) and (min-width:700px), (orientation:landscape) and (min-aspect-ratio:3/2) and (min-width:700px)');
+    const mq = matchMedia('(max-width:699px), (min-width:1181px), (hover:hover) and (pointer:fine) and (min-width:700px), (orientation:landscape) and (min-aspect-ratio:3/2) and (min-width:700px)');
     let raf = 0;
     const calc = () => {
       raf = 0;

@@ -43,6 +43,7 @@
         })();
       };
       el.addEventListener('retype', run);
+      el.addEventListener('relang', () => { const w = words(); if (!reduce) el.textContent = w[i % w.length].slice(0, del || j > 0 ? j : 0); else el.textContent = w[0]; });
       run();
     });
   }

@@ -2,7 +2,7 @@
   const PAGE = document.documentElement.dataset.page || 'home';
   const C = {
     ru: {
-      brand: 'Мухамед', n1: 'Правила сети', n4: 'Мультиссылка', n2: 'Мониторинг сети', n3: 'YouTube-проєкти',
+      brand: 'Мухамед', n1: 'Правила сети', n4: 'Мультиссылка', n2: 'Мониторинг сети', n3: 'YouTube-проекты',
       bhl: 'Сокращатель ссылок', edge: 'Мухамед Ads — Сокращатель ссылок',
       m1: 'Длинные адреса в короткие ссылки', m2: 'Один клик, одна ссылка', m3: 'Мгновенно, точно, надёжно',
       m4: 'Только безопасные http и https', m5: 'Мухамед Ads', m6: 'Креативная и технологическая сеть',
@@ -26,7 +26,7 @@
   const P = {
     ru: {
       home: {
-        title: 'Мухамед Ads — креативно-технологическая сеть | Сократитель',
+        title: 'Мухамед Ads — креативно-технологическая сеть | Сокращатель',
         desc: 'Предоставляем удобный инструмент для создания коротких ссылок, упрощая обмен адресами и делая переход к нужным ресурсам быстрее и комфортнее.',
         bs1: 'Запуск сервиса', bs2: 'Хранилище ссылок', bs3: 'Защита переходов', bs4: 'Сервис готов',
         kick: 'Умный сокращатель сети', h1a: 'Умные', h1b: 'ссылки', h1c: 'превращайте длинные адреса в короткие',
@@ -34,8 +34,8 @@
         lead: 'Один аккуратный адрес вместо длинной ссылки.\nОн готов сразу и копируется сам, остаётся только поделиться.',
         f1: 'ссылок создано в сети', f2: 'переходов по ссылкам', f4: 'переходов у самой популярной ссылки',
         fl: 'Ваша длинная ссылка', ph: 'https://www.muhamedlabs.pro/ads/network/shortener', go: 'Сократить',
-        
-        res: 'Ваша короткая ссылка готова', cp: 'Копировать', cpd: 'Скопировано', to: 'Ведёт на', again: 'Сократить ещё', copied: 'Ссылка скопирована', 
+
+        res: 'Ваша короткая ссылка готова', cp: 'Копировать', cpd: 'Скопировано', to: 'Ведёт на', again: 'Сократить ещё', copied: 'Ссылка скопирована',
         sht: 'Умный сокращатель',
         busy: 'Сжимаем адрес…',
         e_url_required: 'Вставьте ссылку.', e_url_invalid: 'Это не похоже на ссылку. Нужен адрес с http:// или https://.',
@@ -71,8 +71,8 @@
         lead: 'Одна акуратна адреса замість довгого посилання.\nВона готова одразу й копіюється сама, лишається лише поділитися.',
         f1: 'посилань створено в мережі', f2: 'переходів за посиланнями', f4: 'переходів у найпопулярнішого посилання',
         fl: 'Ваше довге посилання', ph: 'https://www.muhamedlabs.pro/ads/network/shortener', go: 'Скоротити',
-        
-        res: 'Ваше коротке посилання готове', cp: 'Копіювати', cpd: 'Скопійовано', to: 'Веде на', again: 'Скоротити ще', copied: 'Посилання скопійовано', 
+
+        res: 'Ваше коротке посилання готове', cp: 'Копіювати', cpd: 'Скопійовано', to: 'Веде на', again: 'Скоротити ще', copied: 'Посилання скопійовано',
         sht: 'Розумний скорочувач',
         busy: 'Стискаємо адресу…',
         e_url_required: 'Вставте посилання.', e_url_invalid: 'Це не схоже на посилання. Потрібна адреса з http:// або https://.',
@@ -108,8 +108,8 @@
         lead: 'One neat address instead of a long link.\nIt is ready at once and copies itself, all that is left is to share it.',
         f1: 'links created in the network', f2: 'visits through links', f4: 'visits on the most popular link',
         fl: 'Your long link', ph: 'https://www.muhamedlabs.pro/ads/network/shortener', go: 'Shorten',
-        
-        res: 'Your short link is ready', cp: 'Copy', cpd: 'Copied', to: 'Leads to', again: 'Shorten another', copied: 'Link copied', 
+
+        res: 'Your short link is ready', cp: 'Copy', cpd: 'Copied', to: 'Leads to', again: 'Shorten another', copied: 'Link copied',
         sht: 'Smart shortener',
         busy: 'Compressing…',
         e_url_required: 'Paste a link.', e_url_invalid: 'That doesn’t look like a link. Use an address with http:// or https://.',
