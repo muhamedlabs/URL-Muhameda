@@ -1,0 +1,22 @@
+{
+  "id": "/",
+  "name": "Мухамед Ads · Сокращатель ссылок",
+  "short_name": "Сокращатель",
+  "description": "Умный сокращатель ссылок от Мухамед Ads: длинные адреса — в короткие.",
+  "lang": "ru",
+  "dir": "ltr",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait",
+  "background_color": "#222222",
+  "theme_color": "#222222",
+  "categories": ["utilities", "productivity"],
+  "prefer_related_applications": false,
+  "icons": [
+    { "src": "/static/icons/pwa-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/static/icons/pwa-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/static/icons/pwa-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
