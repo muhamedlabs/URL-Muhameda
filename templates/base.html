@@ -36,19 +36,31 @@
   <meta property="og:locale:alternate" content="uk_UA">
   <meta property="og:locale:alternate" content="en_US">
   <meta property="article:publisher" content="https://muhamedlabs.pro">
-  <meta property="og:url" content="{{ site_url }}/">
-  <meta property="og:title" content="{% block ogtitle %}Умный сокращатель ссылок{% endblock %}">
-  <meta property="og:description" content="{{ self.desc() }}">
+  <meta property="og:url" content="{{ site_url }}/{{ code if code else '' }}">
+  {% set ogt %}{% block ogtitle %}Умный сокращатель ссылок{% endblock %}{% endset %}
+  <meta property="og:title" content="{{ preview.title if preview and preview.title else ogt }}">
+  <meta property="og:description" content="{{ preview.desc if preview and preview.desc else self.desc() }}">
+  {% if preview and preview.image %}
+  <meta property="og:image" content="{{ preview.image }}">
+  {% if preview.width and preview.height %}<meta property="og:image:width" content="{{ preview.width }}">
+  <meta property="og:image:height" content="{{ preview.height }}">{% endif %}
+  <meta property="og:image:alt" content="{{ preview.title }}">
+  {% else %}
   <meta property="og:image" content="{{ site_url }}/static/images/twitter/SEO_4.webp">
   <meta property="og:image:width" content="1920">
   <meta property="og:image:height" content="1080">
   <meta property="og:image:alt" content="Умный сокращатель ссылок">
   <meta property="og:image:type" content="image/webp">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="{{ self.ogtitle() }}">
-  <meta name="twitter:description" content="{{ self.desc() }}">
+  {% endif %}
+  <meta name="twitter:card" content="{{ 'summary' if preview and not preview.large else 'summary_large_image' }}">
+  <meta name="twitter:title" content="{{ preview.title if preview and preview.title else ogt }}">
+  <meta name="twitter:description" content="{{ preview.desc if preview and preview.desc else self.desc() }}">
+  {% if preview and preview.image %}
+  <meta name="twitter:image" content="{{ preview.image }}">
+  {% else %}
   <meta name="twitter:image:alt" content="Умный сокращатель ссылок">
   <meta name="twitter:image" content="{{ site_url }}/static/images/twitter/SEO_4.webp">
+  {% endif %}
   {% block jsonld %}<script type="application/ld+json">{{ jsonld|safe }}</script>{% endblock %}
   <link rel="stylesheet" href="/static/css/styles_base.css">
   <link rel="stylesheet" href="/static/css/styles_home.css">

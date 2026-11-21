@@ -7,6 +7,7 @@ from flask import Blueprint, Response, abort, make_response, redirect, render_te
 import settings
 from storage import redis_store as store
 from utils.helpers import is_valid_code, normalize_url
+from utils.preview import get_preview
 
 pages_bp = Blueprint("pages", __name__)
 
@@ -95,9 +96,15 @@ def go_now(code):
 def wait_page(code):
     if not is_valid_code(code):
         abort(404)
-    if not store.get_url(code):
+    target = store.get_url(code)
+    if not target:
         abort(404)
-    if not _is_bot():
+    preview = None
+    if _is_bot():
+        # мессенджер строит превью: показываем название, описание и картинку целевого сайта
+        safe = normalize_url(target)
+        preview = get_preview(safe) if safe else None
+    else:
         store.visit(code)
-    resp = make_response(render_template("go.html", code=code, delay=settings.REDIRECT_DELAY))
+    resp = make_response(render_template("go.html", code=code, delay=settings.REDIRECT_DELAY, preview=preview))
     return _nocache(resp)
