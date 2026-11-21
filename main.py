@@ -94,7 +94,6 @@ def not_found(_e):
 def init():
     try:
         store.client().ping()
-        print(f"[REDIS] OK {settings.REDIS_HOST}:{settings.REDIS_PORT} db={settings.REDIS_DB}")
         store.migrate_legacy()
         store.sync_storage()
         store.backup_once()
@@ -107,7 +106,6 @@ _inited = False
 
 
 def ensure_init():
-    """Запуск и через `python main.py`, и через gunicorn/uwsgi (раньше init() работал только при прямом запуске)."""
     global _inited
     if not _inited:
         _inited = True
