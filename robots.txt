@@ -1,0 +1,27 @@
+# Muhamed Ads — сокращатель ссылок (url.muhamedlabs.pro)
+# Главная страница открыта для индексации. Служебные адреса и редиректы закрыты.
+
+User-agent: *
+Allow: /
+# стили, скрипты и картинки нужны поисковикам для отрисовки страниц — не закрываем
+Allow: /static/
+Disallow: /api/
+Disallow: /go/
+Disallow: /BANNED_FILES/
+Disallow: /*.py$
+Disallow: /*.env$
+Disallow: /*.json$
+
+# Ссылки на страницы-дубли с параметрами
+Disallow: /*?boot
+Disallow: /*?source=
+
+User-agent: Yandex
+Allow: /
+Allow: /static/
+Disallow: /api/
+Disallow: /go/
+Disallow: /BANNED_FILES/
+Clean-param: boot&source
+
+Sitemap: https://url.muhamedlabs.pro/sitemap.xml
